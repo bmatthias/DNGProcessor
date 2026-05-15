@@ -20,16 +20,21 @@ public class Path {
 
     public static final String EXT_RAW = ".dng";
     public static final String EXT_JPG = ".jpg";
-    public static final String EXT_JPG_SUFFIX = "_DNGP" + EXT_JPG;
 
     public static final String MIME_RAW = "image/x-adobe-dng";
+    public static final String MIME_RAW_ALT = "image/dng";
     public static final String MIME_JPG = "image/jpeg";
 
     public static final String ROOT = Environment.getExternalStorageDirectory().toString();
 
     public static boolean isRaw(ContentResolver contentResolver, Uri uri, String file) {
+        // Check file extension first (most reliable)
+        if (file != null && file.toLowerCase().endsWith(EXT_RAW)) {
+            return true;
+        }
+        // Fall back to MIME type check
         String mime = contentResolver.getType(uri);
-        return MIME_RAW.equals(mime) || (MIME_JPG.equals(mime) && file.endsWith(Path.EXT_RAW));
+        return MIME_RAW.equals(mime) || MIME_RAW_ALT.equals(mime);
     }
 
     public static String processedPath(String dir, String name) {
@@ -38,8 +43,43 @@ public class Path {
         if (!folder.exists() && !folder.mkdir()) {
             throw new RuntimeException("Cannot create " + dir);
         }
-        name = name.replace(EXT_RAW, Preferences.global().suffix.get() ? EXT_JPG_SUFFIX : EXT_JPG);
+        name = name.replace(EXT_RAW, EXT_JPG);
+        if (Preferences.global().suffix.get() && name.startsWith("IMG")) {
+            String replacement = Preferences.global().replacePrefixText.get();
+            if (replacement != null && !replacement.isEmpty()) {
+                name = replacement + name.substring(3);
+            }
+        }
+        if (Preferences.global().addSuffix.get()) {
+            String suffixText = Preferences.global().addSuffixText.get();
+            if (suffixText != null && !suffixText.isEmpty()) {
+                int dotIndex = name.lastIndexOf('.');
+                if (dotIndex > 0) {
+                    name = name.substring(0, dotIndex) + "_" + suffixText + name.substring(dotIndex);
+                } else {
+                    name = name + "_" + suffixText;
+                }
+            }
+        }
         return dir + File.separator + name;
+    }
+
+    /**
+     * Get the path to the original JPEG file based on DNG filename and location preference
+     * @param jpegLocation Location directory (e.g., "DCIM/Camera")
+     * @param dngFileName Original DNG filename (e.g., "IMG_1234.dng")
+     * @return Full path to the JPEG file, or null if not found
+     */
+    public static String getOriginalJpegPath(String jpegLocation, String dngFileName) {
+        // Replace .dng extension with .jpg
+        String jpegFileName = dngFileName.replace(EXT_RAW, EXT_JPG);
+        // Build full path
+        String jpegPath = ROOT + File.separator + jpegLocation + File.separator + jpegFileName;
+        File jpegFile = new File(jpegPath);
+        if (jpegFile.exists()) {
+            return jpegPath;
+        }
+        return null;
     }
 
     public static String getFileFromUri(Context context, Uri uri) {
@@ -63,10 +103,36 @@ public class Path {
 
         /* document/raw:PATH */
         if (filePath == null) {
-            filePath = uri.getPath();
-            if (filePath.contains(":")) {
-                String[] split = filePath.split(":");
-                filePath = split[split.length - 1];
+            // Try Downloads provider with _data column
+            if (DocumentsContract.isDocumentUri(context, uri)) {
+                String id = DocumentsContract.getDocumentId(uri);
+                String p = uri.getPath();
+                if (p != null && p.startsWith("/document")) {
+                    try {
+                        long l = Long.parseLong(id.contains(":") ? id.split(":")[1] : id);
+                        // Try querying Downloads provider directly for _data column
+                        filePath = query(context.getContentResolver(), 
+                                ContentUris.withAppendedId(
+                                        Uri.parse("content://downloads/public_downloads"), l),
+                                "_data");
+                        if (filePath == null) {
+                            // Try with all_downloads
+                            filePath = query(context.getContentResolver(),
+                                    ContentUris.withAppendedId(
+                                            Uri.parse("content://downloads/all_downloads"), l),
+                                    "_data");
+                        }
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+            
+            if (filePath == null) {
+                filePath = uri.getPath();
+                if (filePath != null && filePath.contains(":")) {
+                    String[] split = filePath.split(":");
+                    filePath = split[split.length - 1];
+                }
             }
         }
 

@@ -20,7 +20,8 @@ void main() {
     /**
      * STANDARD DEVIATIONS
      */
-    vec3 mean, sigma;
+    vec3 mean = vec3(0.0);
+    vec3 sigma = vec3(0.0);
     for (int i = 0; i < 9; i++) {
         mean += impatch[i];
     }
@@ -30,6 +31,17 @@ void main() {
         sigma += diff * diff;
     }
 
-    float z = texelFetch(intermediate, xy, 0).z;
+    // Decode HDR luminance: Y = z / alpha (alpha = 1/scale)
+    // If alpha == 1.0, no encoding was applied
+    vec4 encoded = texelFetch(intermediate, xy, 0);
+    float z;
+    if (encoded.w >= 0.9999) {
+        // No encoding was applied - Y is already correct
+        z = encoded.z;
+    } else {
+        // Decode: Y = encoded.z / encoded.w
+        float invScale = max(encoded.w, 0.0001);
+        z = encoded.z / invScale;
+    }
     analysis = vec4(sqrt(sigma / 9.f), z);
 }

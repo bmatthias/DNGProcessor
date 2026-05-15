@@ -34,14 +34,23 @@ class TagParser {
                     values[elementNum] = (char) valueWrap.get();
                 } else if (type == TIFF.TYPE_UInt_16) {
                     values[elementNum] = valueWrap.getShort() & 0xFFFF;
+                } else if (type == TIFF.TYPE_SInt_16) {
+                    values[elementNum] = (int) valueWrap.getShort();
                 } else if (type == TIFF.TYPE_UInt_32) {
+                    values[elementNum] = valueWrap.getInt();
+                } else if (type == TIFF.TYPE_SInt_32) {
                     values[elementNum] = valueWrap.getInt();
                 } else if (type == TIFF.TYPE_UFrac) {
                     values[elementNum] = new Rational(valueWrap.getInt(), valueWrap.getInt());
                 } else if (type == TIFF.TYPE_Frac) {
                     values[elementNum] = new Rational(valueWrap.getInt(), valueWrap.getInt());
+                } else if (type == TIFF.TYPE_Float) {
+                    values[elementNum] = valueWrap.getFloat();
                 } else if (type == TIFF.TYPE_Double) {
                     values[elementNum] = valueWrap.getDouble();
+                } else if (type == TIFF.TYPE_UInt_64 || type == TIFF.TYPE_SInt_64) {
+                    // Store as Long for 64-bit values
+                    values[elementNum] = valueWrap.getLong();
                 }
             }
 

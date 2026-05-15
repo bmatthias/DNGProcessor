@@ -6,11 +6,21 @@
         <item name="android:colorPrimary">@color/colorPrimary</item>
         <item name="android:colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="android:colorAccent">@color/colorAccent</item>
+        <item name="android:fitsSystemWindows">true</item>
     </style>
 
     <style name="SettingsTheme.ActionBar">
         <item name="android:textColorPrimary">@color/colorAccent</item>
         <item name="android:colorControlNormal">@color/colorAccent</item>
+    </style>
+
+    <style name="ToneCurveTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:colorPrimary">#1E1E23</item>
+        <item name="android:colorPrimaryDark">#1E1E23</item>
+        <item name="android:colorAccent">#0066CC</item>
+        <item name="android:statusBarColor">#1E1E23</item>
+        <item name="android:navigationBarColor">#2A2A30</item>
     </style>
 
 </resources>

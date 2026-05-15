@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory android:title="@string/category_features">
 
@@ -15,6 +16,12 @@
             android:summary="@string/pref_reprocess_summary"
             android:persistent="false" />
 
+        <amirz.dngprocessor.ui.PipelineStatusPreference
+            android:key="@string/pref_pipeline_status"
+            android:title="@string/pref_pipeline_status_title"
+            android:summary="@string/pref_pipeline_status_summary"
+            android:persistent="false" />
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/category_files">
@@ -25,26 +32,331 @@
             android:summary="@string/pref_background_process_desc"
             android:defaultValue="@bool/pref_background_process_default" />
 
-        <SwitchPreference
-            android:key="@string/pref_delete_original"
-            android:title="@string/pref_delete_original_title"
-            android:summary="@string/pref_delete_original_desc"
-            android:defaultValue="@bool/pref_delete_original_default" />
+        <PreferenceScreen
+            android:title="@string/category_files_options"
+            android:summary="@string/category_files_options_desc"
+            android:persistent="false">
 
-        <SwitchPreference
-            android:key="@string/pref_suffix"
-            android:title="@string/pref_suffix_title"
-            android:summary="@string/pref_suffix_desc"
-            android:defaultValue="@bool/pref_suffix_default" />
+            <SwitchPreference
+                android:key="@string/pref_delete_original_jpeg"
+                android:title="@string/pref_delete_original_jpeg_title"
+                android:summary="@string/pref_delete_original_jpeg_desc"
+                android:defaultValue="@bool/pref_delete_original_jpeg_default" />
 
-        <amirz.library.settings.TextPreference
-            android:key="@string/pref_save_path"
-            android:title="@string/pref_save_path_title"
-            android:defaultValue="@string/pref_save_path_default" />
+            <amirz.library.settings.TextPreference
+                android:key="@string/pref_jpeg_location"
+                android:title="@string/pref_jpeg_location_title"
+                android:defaultValue="@string/pref_jpeg_location_default" />
+
+            <SwitchPreference
+                android:key="@string/pref_delete_original"
+                android:title="@string/pref_delete_original_title"
+                android:summary="@string/pref_delete_original_desc"
+                android:defaultValue="@bool/pref_delete_original_default" />
+
+            <SwitchPreference
+                android:key="@string/pref_skip_existing"
+                android:title="@string/pref_skip_existing_title"
+                android:summary="@string/pref_skip_existing_desc"
+                android:defaultValue="@bool/pref_skip_existing_default" />
+
+            <SwitchPreference
+                android:key="@string/pref_suffix"
+                android:title="@string/pref_suffix_title"
+                android:summary="@string/pref_suffix_desc"
+                android:defaultValue="@bool/pref_suffix_default" />
+
+            <amirz.library.settings.TextPreference
+                android:key="@string/pref_replace_prefix_text"
+                android:title="@string/pref_replace_prefix_text_title"
+                android:defaultValue="@string/pref_replace_prefix_text_default"
+                android:dependency="@string/pref_suffix" />
+
+            <SwitchPreference
+                android:key="@string/pref_add_suffix"
+                android:title="@string/pref_add_suffix_title"
+                android:summary="@string/pref_add_suffix_desc"
+                android:defaultValue="@bool/pref_add_suffix_default" />
+
+            <amirz.library.settings.TextPreference
+                android:key="@string/pref_add_suffix_text"
+                android:title="@string/pref_add_suffix_text_title"
+                android:defaultValue="@string/pref_add_suffix_text_default"
+                android:dependency="@string/pref_add_suffix" />
+
+            <amirz.library.settings.TextPreference
+                android:key="@string/pref_save_path"
+                android:title="@string/pref_save_path_title"
+                android:defaultValue="@string/pref_save_path_default" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_jpeg_quality"
+                android:title="@string/pref_jpeg_quality_title"
+                android:summary="@string/pref_jpeg_quality_desc"
+                android:defaultValue="@integer/pref_jpeg_quality_default"
+                app:minValue="80"
+                app:maxValue="100"
+                app:stepValue="1"
+                app:decimalPlaces="0" />
+
+        </PreferenceScreen>
 
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/category_pipeline">
+    <PreferenceCategory android:title="@string/category_processing">
+
+        <ListPreference
+            android:key="@string/pref_post_process"
+            android:title="@string/pref_post_process_title"
+            android:summary="%s"
+            android:entries="@array/post_processing_preset_names"
+            android:entryValues="@array/post_processing_preset_values"
+            android:defaultValue="@string/pref_post_process_default" />
+
+        <PreferenceScreen
+            android:key="@string/pref_mat_mode_options"
+            android:title="@string/pref_mat_mode_options_title"
+            android:summary="@string/pref_mat_mode_options_desc"
+            android:persistent="false"
+            android:enabled="false">
+
+            <SwitchPreference
+                android:key="@string/pref_mat_green_to_yellow_shift"
+                android:title="@string/pref_mat_green_to_yellow_shift_title"
+                android:summary="@string/pref_mat_green_to_yellow_shift_desc"
+                android:defaultValue="@bool/pref_mat_green_to_yellow_shift_default" />
+
+            <SwitchPreference
+                android:key="@string/pref_mat_yellow_to_warm_shift"
+                android:title="@string/pref_mat_yellow_to_warm_shift_title"
+                android:summary="@string/pref_mat_yellow_to_warm_shift_desc"
+                android:defaultValue="@bool/pref_mat_yellow_to_warm_shift_default" />
+
+            <SwitchPreference
+                android:key="@string/pref_mat_highlight_bloom"
+                android:title="@string/pref_mat_highlight_bloom_title"
+                android:summary="@string/pref_mat_highlight_bloom_desc"
+                android:defaultValue="@bool/pref_mat_highlight_bloom_default" />
+
+            <SwitchPreference
+                android:key="@string/pref_mat_highlight_desaturation"
+                android:title="@string/pref_mat_highlight_desaturation_title"
+                android:summary="@string/pref_mat_highlight_desaturation_desc"
+                android:defaultValue="@bool/pref_mat_highlight_desaturation_default" />
+
+            <SwitchPreference
+                android:key="@string/pref_mat_shadow_richness"
+                android:title="@string/pref_mat_shadow_richness_title"
+                android:summary="@string/pref_mat_shadow_richness_desc"
+                android:defaultValue="@bool/pref_mat_shadow_richness_default" />
+
+            <SwitchPreference
+                android:key="@string/pref_mat_vignetting"
+                android:title="@string/pref_mat_vignetting_title"
+                android:summary="@string/pref_mat_vignetting_desc"
+                android:defaultValue="@bool/pref_mat_vignetting_default" />
+
+            <SwitchPreference
+                android:key="@string/pref_mat_soft_highlight_rolloff"
+                android:title="@string/pref_mat_soft_highlight_rolloff_title"
+                android:summary="@string/pref_mat_soft_highlight_rolloff_desc"
+                android:defaultValue="@bool/pref_mat_soft_highlight_rolloff_default" />
+
+        </PreferenceScreen>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/category_color_tone">
+
+        <PreferenceScreen
+            android:title="@string/category_tone_adjustments"
+            android:summary="@string/category_tone_adjustments_desc"
+            android:persistent="false">
+
+            <SwitchPreference
+                android:key="@string/pref_tone_curve_enabled"
+                android:title="@string/pref_tone_curve_enabled_title"
+                android:summary="@string/pref_tone_curve_enabled_desc"
+                android:defaultValue="false" />
+
+            <Preference
+                android:key="@string/pref_tone_curve"
+                android:title="@string/pref_tone_curve_title"
+                android:summary="@string/pref_tone_curve_desc"
+                android:persistent="false">
+                <intent android:action="android.intent.action.VIEW"
+                    android:targetPackage="amirz.dngprocessor"
+                    android:targetClass="amirz.dngprocessor.ui.ToneCurveActivity" />
+            </Preference>
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_tone_exposure"
+                android:title="@string/pref_tone_exposure_title"
+                android:defaultValue="@integer/pref_tone_exposure_default"
+                app:minValue="-2.0"
+                app:maxValue="2.0"
+                app:stepValue="0.1"
+                app:decimalPlaces="1" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_tone_highlights"
+                android:title="@string/pref_tone_highlights_title"
+                android:defaultValue="@integer/pref_tone_highlights_default"
+                app:minValue="-100"
+                app:maxValue="100"
+                app:stepValue="1"
+                app:decimalPlaces="0" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_tone_shadows"
+                android:title="@string/pref_tone_shadows_title"
+                android:defaultValue="@integer/pref_tone_shadows_default"
+                app:minValue="-100"
+                app:maxValue="100"
+                app:stepValue="1"
+                app:decimalPlaces="0" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_tone_whites"
+                android:title="@string/pref_tone_whites_title"
+                android:defaultValue="@integer/pref_tone_whites_default"
+                app:minValue="-100"
+                app:maxValue="100"
+                app:stepValue="1"
+                app:decimalPlaces="0" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_tone_blacks"
+                android:title="@string/pref_tone_blacks_title"
+                android:defaultValue="@integer/pref_tone_blacks_default"
+                app:minValue="-100"
+                app:maxValue="100"
+                app:stepValue="1"
+                app:decimalPlaces="0" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_tone_contrast"
+                android:title="@string/pref_tone_contrast_title"
+                android:defaultValue="@integer/pref_tone_contrast_default"
+                app:minValue="-100"
+                app:maxValue="100"
+                app:stepValue="1"
+                app:decimalPlaces="0" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_tone_texture"
+                android:title="@string/pref_tone_texture_title"
+                android:defaultValue="@integer/pref_tone_texture_default"
+                app:minValue="-100"
+                app:maxValue="100"
+                app:stepValue="1"
+                app:decimalPlaces="0" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_tone_clarity"
+                android:title="@string/pref_tone_clarity_title"
+                android:defaultValue="@integer/pref_tone_clarity_default"
+                app:minValue="-100"
+                app:maxValue="100"
+                app:stepValue="1"
+                app:decimalPlaces="0" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_tone_dehaze"
+                android:title="@string/pref_tone_dehaze_title"
+                android:defaultValue="@integer/pref_tone_dehaze_default"
+                app:minValue="-100"
+                app:maxValue="100"
+                app:stepValue="1"
+                app:decimalPlaces="0" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_tone_vibrance"
+                android:title="@string/pref_tone_vibrance_title"
+                android:defaultValue="@integer/pref_tone_vibrance_default"
+                app:minValue="-100"
+                app:maxValue="100"
+                app:stepValue="1"
+                app:decimalPlaces="0" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_tone_saturation"
+                android:title="@string/pref_tone_saturation_title"
+                android:defaultValue="@integer/pref_tone_saturation_default"
+                app:minValue="-100"
+                app:maxValue="100"
+                app:stepValue="1"
+                app:decimalPlaces="0" />
+
+            <Preference
+                android:key="@string/pref_tone_reset"
+                android:title="@string/pref_tone_reset_title"
+                android:summary="@string/pref_tone_reset_desc"
+                android:persistent="false" />
+
+        </PreferenceScreen>
+
+        <Preference
+            android:key="@string/pref_external_lut_path"
+            android:title="@string/pref_external_lut_path_title"
+            android:summary="@string/pref_external_lut_path_desc"
+            android:persistent="false" />
+
+        <Preference
+            android:key="@string/pref_external_lut_clear"
+            android:title="@string/pref_external_lut_clear_title"
+            android:summary="@string/pref_external_lut_clear_desc"
+            android:persistent="false" />
+
+        <PreferenceScreen
+            android:title="@string/category_adaptive_saturation"
+            android:summary="@string/category_adaptive_saturation_desc"
+            android:persistent="false">
+
+            <SwitchPreference
+                android:key="@string/pref_adaptive_saturation_curve_enabled"
+                android:title="@string/pref_adaptive_saturation_curve_enabled_title"
+                android:summary="@string/pref_adaptive_saturation_curve_enabled_desc"
+                android:defaultValue="@bool/pref_adaptive_saturation_curve_enabled_default" />
+
+            <Preference
+                android:key="@string/pref_adaptive_saturation_curve"
+                android:title="@string/pref_adaptive_saturation_curve_title"
+                android:summary="@string/pref_adaptive_saturation_curve_desc"
+                android:persistent="false"
+                android:dependency="@string/pref_adaptive_saturation_curve_enabled">
+                <intent android:action="android.intent.action.VIEW"
+                    android:targetPackage="amirz.dngprocessor"
+                    android:targetClass="amirz.dngprocessor.ui.AdaptiveSaturationCurveActivity" />
+            </Preference>
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_hist_factor"
+                android:title="@string/pref_hist_factor_title"
+                android:summary="@string/pref_hist_factor_desc"
+                android:defaultValue="@integer/pref_hist_factor_default"
+                app:minValue="0.0"
+                app:maxValue="1.0"
+                app:stepValue="0.05"
+                app:decimalPlaces="2" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_adaptive_saturation_power"
+                android:title="@string/pref_adaptive_saturation_power_title"
+                android:summary="@string/pref_adaptive_saturation_power_desc"
+                android:defaultValue="@integer/pref_adaptive_saturation_power_default"
+                app:minValue="-10.0"
+                app:maxValue="10.0"
+                app:stepValue="0.1"
+                app:decimalPlaces="1" />
+
+            <Preference
+                android:key="@string/pref_adaptive_saturation_reset"
+                android:title="@string/pref_adaptive_saturation_reset_title"
+                android:summary="@string/pref_adaptive_saturation_reset_desc"
+                android:persistent="false" />
+
+        </PreferenceScreen>
 
         <PreferenceScreen
             android:title="@string/category_saturation_map"
@@ -114,51 +426,789 @@
 
         </PreferenceScreen>
 
-        <ListPreference
-            android:key="@string/pref_post_process"
-            android:title="@string/pref_post_process_title"
-            android:summary="%s"
-            android:entries="@array/post_processing_preset_names"
-            android:entryValues="@array/post_processing_preset_values"
-            android:defaultValue="@string/pref_post_process_default" />
+        <PreferenceScreen
+            android:title="@string/category_color_transform"
+            android:summary="@string/category_color_transform_desc"
+            android:persistent="false">
 
-        <SwitchPreference
-            android:key="@string/pref_noise_reduce"
-            android:title="@string/pref_noise_reduce_title"
-            android:summary="@string/pref_noise_reduce_desc"
-            android:defaultValue="@bool/pref_noise_reduce_default" />
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_color_transform_rr"
+                android:title="@string/pref_color_transform_rr_title"
+                android:defaultValue="@integer/pref_color_transform_rr_default"
+                app:minValue="-1.0"
+                app:maxValue="2.0"
+                app:stepValue="0.05"
+                app:decimalPlaces="2" />
 
-        <SwitchPreference
-            android:key="@string/pref_expose_fuse"
-            android:title="@string/pref_expose_fuse_title"
-            android:summary="@string/pref_expose_fuse_desc"
-            android:defaultValue="@bool/pref_expose_fuse_default" />
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_color_transform_rg"
+                android:title="@string/pref_color_transform_rg_title"
+                android:defaultValue="@integer/pref_color_transform_rg_default"
+                app:minValue="-1.0"
+                app:maxValue="2.0"
+                app:stepValue="0.05"
+                app:decimalPlaces="2" />
 
-        <SwitchPreference
-            android:key="@string/pref_lce"
-            android:title="@string/pref_lce_title"
-            android:summary="@string/pref_lce_desc"
-            android:defaultValue="@bool/pref_lce_default" />
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_color_transform_rb"
+                android:title="@string/pref_color_transform_rb_title"
+                android:defaultValue="@integer/pref_color_transform_rb_default"
+                app:minValue="-1.0"
+                app:maxValue="2.0"
+                app:stepValue="0.05"
+                app:decimalPlaces="2" />
 
-        <!--
-        <SwitchPreference
-            android:key="@string/pref_ahe"
-            android:title="@string/pref_ahe_title"
-            android:summary="@string/pref_ahe_desc"
-            android:defaultValue="@bool/pref_ahe_default" />
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_color_transform_gr"
+                android:title="@string/pref_color_transform_gr_title"
+                android:defaultValue="@integer/pref_color_transform_gr_default"
+                app:minValue="-1.0"
+                app:maxValue="2.0"
+                app:stepValue="0.05"
+                app:decimalPlaces="2" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_color_transform_gg"
+                android:title="@string/pref_color_transform_gg_title"
+                android:defaultValue="@integer/pref_color_transform_gg_default"
+                app:minValue="-1.0"
+                app:maxValue="2.0"
+                app:stepValue="0.05"
+                app:decimalPlaces="2" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_color_transform_gb"
+                android:title="@string/pref_color_transform_gb_title"
+                android:defaultValue="@integer/pref_color_transform_gb_default"
+                app:minValue="-1.0"
+                app:maxValue="2.0"
+                app:stepValue="0.05"
+                app:decimalPlaces="2" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_color_transform_br"
+                android:title="@string/pref_color_transform_br_title"
+                android:defaultValue="@integer/pref_color_transform_br_default"
+                app:minValue="-1.0"
+                app:maxValue="2.0"
+                app:stepValue="0.05"
+                app:decimalPlaces="2" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_color_transform_bg"
+                android:title="@string/pref_color_transform_bg_title"
+                android:defaultValue="@integer/pref_color_transform_bg_default"
+                app:minValue="-1.0"
+                app:maxValue="2.0"
+                app:stepValue="0.05"
+                app:decimalPlaces="2" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_color_transform_bb"
+                android:title="@string/pref_color_transform_bb_title"
+                android:defaultValue="@integer/pref_color_transform_bb_default"
+                app:minValue="-1.0"
+                app:maxValue="2.0"
+                app:stepValue="0.05"
+                app:decimalPlaces="2" />
+
+            <Preference
+                android:key="@string/pref_color_transform_reset"
+                android:title="@string/pref_color_transform_reset_title"
+                android:summary="@string/pref_color_transform_reset_desc"
+                android:persistent="false" />
+
+        </PreferenceScreen>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/category_detail_enhancement">
+
+        <PreferenceScreen
+            android:title="@string/category_sharpening_noise"
+            android:summary="@string/category_sharpening_noise_desc"
+            android:persistent="false">
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_sharpening"
+                android:title="@string/pref_sharpening_title"
+                android:defaultValue="@integer/pref_sharpening_default"
+                app:minValue="0"
+                app:maxValue="100"
+                app:stepValue="1"
+                app:decimalPlaces="0" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_noise_reduction"
+                android:title="@string/pref_noise_reduction_title"
+                android:defaultValue="@integer/pref_noise_reduction_default"
+                app:minValue="0"
+                app:maxValue="100"
+                app:stepValue="1"
+                app:decimalPlaces="0" />
+
+            <SwitchPreference
+                android:key="@string/pref_force_noise_reduction"
+                android:title="@string/pref_force_noise_reduction_title"
+                android:summary="@string/pref_force_noise_reduction_desc"
+                android:defaultValue="@bool/pref_force_noise_reduction_default" />
+
+            <!-- Wavelet noise reduction - temporarily disabled, code commented out
+            <SwitchPreference
+                android:key="@string/pref_wavelet_noise_reduction"
+                android:title="@string/pref_wavelet_noise_reduction_title"
+                android:summary="@string/pref_wavelet_noise_reduction_desc"
+                android:defaultValue="@bool/pref_wavelet_noise_reduction_default" />
             -->
 
-        <SwitchPreference
-            android:key="@string/pref_forward_matrix"
-            android:title="@string/pref_forward_matrix_title"
-            android:summary="@string/pref_forward_matrix_desc"
-            android:defaultValue="@bool/pref_forward_matrix_default" />
+        </PreferenceScreen>
 
-        <SwitchPreference
-            android:key="@string/pref_gain_map"
-            android:title="@string/pref_gain_map_title"
-            android:summary="@string/pref_gain_map_desc"
-            android:defaultValue="@bool/pref_gain_map_default" />
+        <PreferenceScreen
+            android:title="@string/category_lce"
+            android:summary="@string/category_lce_desc"
+            android:persistent="false">
+
+            <SwitchPreference
+                android:key="@string/pref_lce"
+                android:title="@string/pref_lce_title"
+                android:summary="@string/pref_lce_desc"
+                android:defaultValue="@bool/pref_lce_default" />
+
+            <ListPreference
+                android:key="@string/pref_lce_method"
+                android:title="@string/pref_lce_method_title"
+                android:summary="@string/pref_lce_method_desc"
+                android:entries="@array/lce_method_names"
+                android:entryValues="@array/lce_method_values"
+                android:defaultValue="@string/pref_lce_method_default"
+                android:dependency="@string/pref_lce" />
+
+            <!-- XStrong (100%) -->
+            <PreferenceCategory
+                android:title="XStrong (100%)"
+                android:dependency="@string/pref_lce" />
+            
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_radius_xstrong"
+                android:title="@string/pref_lce_radius_xstrong_title"
+                android:defaultValue="@integer/pref_lce_radius_xstrong_default"
+                app:minValue="10.0"
+                app:maxValue="200.0"
+                app:stepValue="1.0"
+                app:decimalPlaces="1"
+                android:dependency="@string/pref_lce" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_strength_xstrong"
+                android:title="@string/pref_lce_strength_xstrong_title"
+                android:defaultValue="@integer/pref_lce_strength_xstrong_default"
+                app:minValue="0.0"
+                app:maxValue="1.0"
+                app:stepValue="0.01"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_limit_xstrong"
+                android:title="@string/pref_lce_limit_xstrong_title"
+                android:defaultValue="@integer/pref_lce_limit_xstrong_default"
+                app:minValue="0.0"
+                app:maxValue="1.0"
+                app:stepValue="0.01"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+
+            <Preference
+                android:key="@string/pref_lce_reset_xstrong"
+                android:title="@string/pref_lce_reset_xstrong_title"
+                android:summary="@string/pref_lce_reset_xstrong_desc"
+                android:persistent="false" />
+
+            <!-- Strong (33%) -->
+            <PreferenceCategory
+                android:title="Strong (33%)"
+                android:dependency="@string/pref_lce" />
+            
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_radius_strong"
+                android:title="@string/pref_lce_radius_strong_title"
+                android:defaultValue="@integer/pref_lce_radius_strong_default"
+                app:minValue="0.1"
+                app:maxValue="100.0"
+                app:stepValue="0.1"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_strength_strong"
+                android:title="@string/pref_lce_strength_strong_title"
+                android:defaultValue="@integer/pref_lce_strength_strong_default"
+                app:minValue="0.0"
+                app:maxValue="1.0"
+                app:stepValue="0.01"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_limit_strong"
+                android:title="@string/pref_lce_limit_strong_title"
+                android:defaultValue="@integer/pref_lce_limit_strong_default"
+                app:minValue="0.0"
+                app:maxValue="1.0"
+                app:stepValue="0.01"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+
+            <Preference
+                android:key="@string/pref_lce_reset_strong"
+                android:title="@string/pref_lce_reset_strong_title"
+                android:summary="@string/pref_lce_reset_strong_desc"
+                android:persistent="false" />
+
+            <!-- Medium (20%) -->
+            <PreferenceCategory
+                android:title="Medium (20%)"
+                android:dependency="@string/pref_lce" />
+            
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_radius_medium"
+                android:title="@string/pref_lce_radius_medium_title"
+                android:defaultValue="@integer/pref_lce_radius_medium_default"
+                app:minValue="0.1"
+                app:maxValue="50.0"
+                app:stepValue="0.1"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_strength_medium"
+                android:title="@string/pref_lce_strength_medium_title"
+                android:defaultValue="@integer/pref_lce_strength_medium_default"
+                app:minValue="0.0"
+                app:maxValue="1.0"
+                app:stepValue="0.01"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_limit_medium"
+                android:title="@string/pref_lce_limit_medium_title"
+                android:defaultValue="@integer/pref_lce_limit_medium_default"
+                app:minValue="0.0"
+                app:maxValue="1.0"
+                app:stepValue="0.01"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+
+            <Preference
+                android:key="@string/pref_lce_reset_medium"
+                android:title="@string/pref_lce_reset_medium_title"
+                android:summary="@string/pref_lce_reset_medium_desc"
+                android:persistent="false" />
+
+            <!-- Weak (10%) -->
+            <PreferenceCategory
+                android:title="Weak (10%)"
+                android:dependency="@string/pref_lce" />
+            
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_radius_weak"
+                android:title="@string/pref_lce_radius_weak_title"
+                android:defaultValue="@integer/pref_lce_radius_weak_default"
+                app:minValue="0.1"
+                app:maxValue="50.0"
+                app:stepValue="0.1"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_strength_weak"
+                android:title="@string/pref_lce_strength_weak_title"
+                android:defaultValue="@integer/pref_lce_strength_weak_default"
+                app:minValue="0.0"
+                app:maxValue="1.0"
+                app:stepValue="0.01"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_limit_weak"
+                android:title="@string/pref_lce_limit_weak_title"
+                android:defaultValue="@integer/pref_lce_limit_weak_default"
+                app:minValue="0.0"
+                app:maxValue="1.0"
+                app:stepValue="0.01"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+
+            <Preference
+                android:key="@string/pref_lce_reset_weak"
+                android:title="@string/pref_lce_reset_weak_title"
+                android:summary="@string/pref_lce_reset_weak_desc"
+                android:persistent="false" />
+
+            <!-- Fine (0.5%) -->
+            <PreferenceCategory
+                android:title="Fine (0.5%)"
+                android:dependency="@string/pref_lce" />
+            
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_radius_fine"
+                android:title="@string/pref_lce_radius_fine_title"
+                android:defaultValue="@integer/pref_lce_radius_fine_default"
+                app:minValue="0.01"
+                app:maxValue="5.0"
+                app:stepValue="0.01"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_strength_fine"
+                android:title="@string/pref_lce_strength_fine_title"
+                android:defaultValue="@integer/pref_lce_strength_fine_default"
+                app:minValue="0.0"
+                app:maxValue="1.0"
+                app:stepValue="0.01"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_limit_fine"
+                android:title="@string/pref_lce_limit_fine_title"
+                android:defaultValue="@integer/pref_lce_limit_fine_default"
+                app:minValue="0.0"
+                app:maxValue="1.0"
+                app:stepValue="0.01"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+
+            <Preference
+                android:key="@string/pref_lce_reset_fine"
+                android:title="@string/pref_lce_reset_fine_title"
+                android:summary="@string/pref_lce_reset_fine_desc"
+                android:persistent="false" />
+
+            <!-- XFine (0.22%) -->
+            <PreferenceCategory
+                android:title="XFine (0.22%)"
+                android:dependency="@string/pref_lce" />
+            
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_radius_xfine"
+                android:title="@string/pref_lce_radius_xfine_title"
+                android:defaultValue="@integer/pref_lce_radius_xfine_default"
+                app:minValue="0.01"
+                app:maxValue="5.0"
+                app:stepValue="0.01"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_strength_xfine"
+                android:title="@string/pref_lce_strength_xfine_title"
+                android:defaultValue="@integer/pref_lce_strength_xfine_default"
+                app:minValue="0.0"
+                app:maxValue="1.0"
+                app:stepValue="0.01"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_lce_limit_xfine"
+                android:title="@string/pref_lce_limit_xfine_title"
+                android:defaultValue="@integer/pref_lce_limit_xfine_default"
+                app:minValue="0.0"
+                app:maxValue="1.0"
+                app:stepValue="0.01"
+                app:decimalPlaces="2"
+                android:dependency="@string/pref_lce" />
+
+
+            <Preference
+                android:key="@string/pref_lce_reset_xfine"
+                android:title="@string/pref_lce_reset_xfine_title"
+                android:summary="@string/pref_lce_reset_xfine_desc"
+                android:persistent="false" />
+
+        </PreferenceScreen>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/category_advanced_options">
+
+        <PreferenceScreen
+            android:title="@string/category_advanced_options"
+            android:summary="@string/category_advanced_options_desc"
+            android:persistent="false">
+
+            <!--
+            <SwitchPreference
+                android:key="@string/pref_ahe"
+                android:title="@string/pref_ahe_title"
+                android:summary="@string/pref_ahe_desc"
+                android:defaultValue="@bool/pref_ahe_default" />
+                -->
+
+            <SwitchPreference
+                android:key="@string/pref_ultra_hdr"
+                android:title="@string/pref_ultra_hdr_title"
+                android:summary="@string/pref_ultra_hdr_desc"
+                android:defaultValue="@bool/pref_ultra_hdr_default" />
+
+            <SwitchPreference
+                android:key="@string/pref_expose_fuse"
+                android:title="@string/pref_expose_fuse_title"
+                android:summary="@string/pref_expose_fuse_desc"
+                android:defaultValue="@bool/pref_expose_fuse_default" />
+
+            <SwitchPreference
+                android:key="@string/pref_forward_matrix"
+                android:title="@string/pref_forward_matrix_title"
+                android:summary="@string/pref_forward_matrix_desc"
+                android:defaultValue="@bool/pref_forward_matrix_default" />
+
+            <SwitchPreference
+                android:key="@string/pref_gain_map"
+                android:title="@string/pref_gain_map_title"
+                android:summary="@string/pref_gain_map_desc"
+                android:defaultValue="@bool/pref_gain_map_default" />
+
+            <!--
+            <SwitchPreference
+                android:key="@string/pref_copy_gain_map_from_jpeg"
+                android:title="@string/pref_copy_gain_map_from_jpeg_title"
+                android:summary="@string/pref_copy_gain_map_from_jpeg_desc"
+                android:defaultValue="@bool/pref_copy_gain_map_from_jpeg_default" />
+                -->
+
+            <!--
+            <SwitchPreference
+                android:key="@string/pref_save_hdr_gain_map"
+                android:title="@string/pref_save_hdr_gain_map_title"
+                android:summary="@string/pref_save_hdr_gain_map_desc"
+                android:defaultValue="@bool/pref_save_hdr_gain_map_default"
+                android:dependency="@string/pref_ultra_hdr" />
+                -->
+
+            <!--
+            <SwitchPreference
+                android:key="@string/pref_save_exposure_fusion_frames"
+                android:title="@string/pref_save_exposure_fusion_frames_title"
+                android:summary="@string/pref_save_exposure_fusion_frames_desc"
+                android:defaultValue="@bool/pref_save_exposure_fusion_frames_default"
+                android:dependency="@string/pref_expose_fuse" />
+                -->
+
+            <!--
+            <SwitchPreference
+                android:key="@string/pref_experimental_settings"
+                android:title="@string/pref_experimental_settings_title"
+                android:summary="@string/pref_experimental_settings_desc"
+                android:defaultValue="@bool/pref_experimental_settings_default" />
+                -->
+
+            <!--
+            <ListPreference
+                android:key="@string/pref_expose_fusion_method"
+                android:title="@string/pref_expose_fusion_method_title"
+                android:summary="@string/pref_expose_fusion_method_desc"
+                android:entries="@array/expose_fusion_method_names"
+                android:entryValues="@array/expose_fusion_method_values"
+                android:defaultValue="@string/pref_expose_fusion_method_default"
+                android:dependency="@string/pref_expose_fuse" />
+                -->
+
+            <SwitchPreference
+                android:key="@string/pref_reference_preview"
+                android:title="@string/pref_reference_preview_title"
+                android:summary="@string/pref_reference_preview_desc"
+                android:defaultValue="@bool/pref_reference_preview_default" />
+
+            <amirz.library.settings.SliderPreference
+                android:key="@string/pref_hist_match_strength"
+                android:title="@string/pref_hist_match_strength_title"
+                android:summary="@string/pref_hist_match_strength_desc"
+                android:defaultValue="@integer/pref_hist_match_strength_default"
+                android:dependency="@string/pref_reference_preview"
+                app:minValue="0.0"
+                app:maxValue="1.0"
+                app:stepValue="0.05"
+                app:decimalPlaces="2" />
+
+            <!--
+            <ListPreference
+                android:key="@string/pref_demosaicing_method"
+                android:title="@string/pref_demosaicing_method_title"
+                android:summary="@string/pref_demosaicing_method_desc"
+                android:entries="@array/demosaicing_method_names"
+                android:entryValues="@array/demosaicing_method_values"
+                android:defaultValue="@string/pref_demosaicing_method_default"
+                android:dependency="@string/pref_experimental_settings" />
+                -->
+
+            <!--
+            <ListPreference
+                android:key="@string/pref_baseline_exposure_compression"
+                android:title="@string/pref_baseline_exposure_compression_title"
+                android:summary="%s"
+                android:entries="@array/baseline_exposure_compression_names"
+                android:entryValues="@array/baseline_exposure_compression_values"
+                android:defaultValue="@string/pref_baseline_exposure_compression_default"
+                android:dependency="@string/pref_experimental_settings" />
+                -->
+
+            <!--
+            <ListPreference
+                android:key="@string/pref_hdr_compression_method"
+                android:title="@string/pref_hdr_compression_method_title"
+                android:summary="%s"
+                android:entries="@array/hdr_compression_method_names"
+                android:entryValues="@array/hdr_compression_method_values"
+                android:defaultValue="@string/pref_hdr_compression_method_default"
+                android:dependency="@string/pref_experimental_settings" />
+                -->
+
+            <!--
+            <SwitchPreference
+                android:key="@string/pref_edge_aware_hist_eq"
+                android:title="@string/pref_edge_aware_hist_eq_title"
+                android:summary="@string/pref_edge_aware_hist_eq_desc"
+                android:defaultValue="@bool/pref_edge_aware_hist_eq_default"
+                android:dependency="@string/pref_experimental_settings" />
+                -->
+
+            <!-- Local Laplacian Filter (darktable-style) -->
+            <!--
+            <PreferenceScreen
+                android:title="@string/category_local_laplacian"
+                android:summary="@string/category_local_laplacian_desc"
+                android:persistent="false"
+                android:dependency="@string/pref_experimental_settings">
+
+                <SwitchPreference
+                    android:key="@string/pref_local_laplacian_enabled"
+                    android:title="@string/pref_local_laplacian_enabled_title"
+                    android:summary="@string/pref_local_laplacian_enabled_desc"
+                    android:defaultValue="@bool/pref_local_laplacian_enabled_default" />
+
+                <amirz.library.settings.SliderPreference
+                    android:key="@string/pref_local_laplacian_shadows"
+                    android:title="@string/pref_local_laplacian_shadows_title"
+                    android:summary="@string/pref_local_laplacian_shadows_desc"
+                    android:defaultValue="@integer/pref_local_laplacian_shadows_default"
+                    app:minValue="0.5"
+                    app:maxValue="2.0"
+                    app:stepValue="0.05"
+                    app:decimalPlaces="2"
+                    android:dependency="@string/pref_local_laplacian_enabled" />
+
+                <amirz.library.settings.SliderPreference
+                    android:key="@string/pref_local_laplacian_highlights"
+                    android:title="@string/pref_local_laplacian_highlights_title"
+                    android:summary="@string/pref_local_laplacian_highlights_desc"
+                    android:defaultValue="@integer/pref_local_laplacian_highlights_default"
+                    app:minValue="0.5"
+                    app:maxValue="2.0"
+                    app:stepValue="0.05"
+                    app:decimalPlaces="2"
+                    android:dependency="@string/pref_local_laplacian_enabled" />
+
+                <amirz.library.settings.SliderPreference
+                    android:key="@string/pref_local_laplacian_clarity"
+                    android:title="@string/pref_local_laplacian_clarity_title"
+                    android:summary="@string/pref_local_laplacian_clarity_desc"
+                    android:defaultValue="@integer/pref_local_laplacian_clarity_default"
+                    app:minValue="0.0"
+                    app:maxValue="1.0"
+                    app:stepValue="0.05"
+                    app:decimalPlaces="2"
+                    android:dependency="@string/pref_local_laplacian_enabled" />
+
+                <amirz.library.settings.SliderPreference
+                    android:key="@string/pref_local_laplacian_sigma"
+                    android:title="@string/pref_local_laplacian_sigma_title"
+                    android:summary="@string/pref_local_laplacian_sigma_desc"
+                    android:defaultValue="@integer/pref_local_laplacian_sigma_default"
+                    app:minValue="0.05"
+                    app:maxValue="0.5"
+                    app:stepValue="0.01"
+                    app:decimalPlaces="2"
+                    android:dependency="@string/pref_local_laplacian_enabled" />
+
+                <SwitchPreference
+                    android:key="@string/pref_local_laplacian_autotune"
+                    android:title="@string/pref_local_laplacian_autotune_title"
+                    android:summary="@string/pref_local_laplacian_autotune_desc"
+                    android:defaultValue="@bool/pref_local_laplacian_autotune_default"
+                    android:dependency="@string/pref_local_laplacian_enabled" />
+
+                <Preference
+                    android:key="@string/pref_local_laplacian_reset"
+                    android:title="@string/pref_local_laplacian_reset_title"
+                    android:summary="@string/pref_local_laplacian_reset_desc"
+                    android:persistent="false" />
+
+            </PreferenceScreen>
+            -->
+
+            <!-- Tone Equalizer (EV-band based adjustment) -->
+            <!--
+            <PreferenceScreen
+                android:title="@string/category_tone_equalizer"
+                android:summary="@string/category_tone_equalizer_desc"
+                android:persistent="false"
+                android:dependency="@string/pref_experimental_settings">
+
+                <SwitchPreference
+                    android:key="@string/pref_tone_equalizer_enabled"
+                    android:title="@string/pref_tone_equalizer_enabled_title"
+                    android:summary="@string/pref_tone_equalizer_enabled_desc"
+                    android:defaultValue="@bool/pref_tone_equalizer_enabled_default" />
+
+                <PreferenceCategory android:title="EV Band Adjustments (stops)" />
+
+                <amirz.library.settings.SliderPreference
+                    android:key="@string/pref_tone_eq_blacks"
+                    android:title="@string/pref_tone_eq_blacks_title"
+                    android:defaultValue="@integer/pref_tone_eq_blacks_default"
+                    app:minValue="-2.0"
+                    app:maxValue="2.0"
+                    app:stepValue="0.1"
+                    app:decimalPlaces="1"
+                    android:dependency="@string/pref_tone_equalizer_enabled" />
+
+                <amirz.library.settings.SliderPreference
+                    android:key="@string/pref_tone_eq_deep_shadows"
+                    android:title="@string/pref_tone_eq_deep_shadows_title"
+                    android:defaultValue="@integer/pref_tone_eq_deep_shadows_default"
+                    app:minValue="-2.0"
+                    app:maxValue="2.0"
+                    app:stepValue="0.1"
+                    app:decimalPlaces="1"
+                    android:dependency="@string/pref_tone_equalizer_enabled" />
+
+                <amirz.library.settings.SliderPreference
+                    android:key="@string/pref_tone_eq_shadows"
+                    android:title="@string/pref_tone_eq_shadows_title"
+                    android:defaultValue="@integer/pref_tone_eq_shadows_default"
+                    app:minValue="-2.0"
+                    app:maxValue="2.0"
+                    app:stepValue="0.1"
+                    app:decimalPlaces="1"
+                    android:dependency="@string/pref_tone_equalizer_enabled" />
+
+                <amirz.library.settings.SliderPreference
+                    android:key="@string/pref_tone_eq_light_shadows"
+                    android:title="@string/pref_tone_eq_light_shadows_title"
+                    android:defaultValue="@integer/pref_tone_eq_light_shadows_default"
+                    app:minValue="-2.0"
+                    app:maxValue="2.0"
+                    app:stepValue="0.1"
+                    app:decimalPlaces="1"
+                    android:dependency="@string/pref_tone_equalizer_enabled" />
+
+                <amirz.library.settings.SliderPreference
+                    android:key="@string/pref_tone_eq_midtones"
+                    android:title="@string/pref_tone_eq_midtones_title"
+                    android:defaultValue="@integer/pref_tone_eq_midtones_default"
+                    app:minValue="-2.0"
+                    app:maxValue="2.0"
+                    app:stepValue="0.1"
+                    app:decimalPlaces="1"
+                    android:dependency="@string/pref_tone_equalizer_enabled" />
+
+                <amirz.library.settings.SliderPreference
+                    android:key="@string/pref_tone_eq_dark_highlights"
+                    android:title="@string/pref_tone_eq_dark_highlights_title"
+                    android:defaultValue="@integer/pref_tone_eq_dark_highlights_default"
+                    app:minValue="-2.0"
+                    app:maxValue="2.0"
+                    app:stepValue="0.1"
+                    app:decimalPlaces="1"
+                    android:dependency="@string/pref_tone_equalizer_enabled" />
+
+                <amirz.library.settings.SliderPreference
+                    android:key="@string/pref_tone_eq_highlights"
+                    android:title="@string/pref_tone_eq_highlights_title"
+                    android:defaultValue="@integer/pref_tone_eq_highlights_default"
+                    app:minValue="-2.0"
+                    app:maxValue="2.0"
+                    app:stepValue="0.1"
+                    app:decimalPlaces="1"
+                    android:dependency="@string/pref_tone_equalizer_enabled" />
+
+                <amirz.library.settings.SliderPreference
+                    android:key="@string/pref_tone_eq_whites"
+                    android:title="@string/pref_tone_eq_whites_title"
+                    android:defaultValue="@integer/pref_tone_eq_whites_default"
+                    app:minValue="-2.0"
+                    app:maxValue="2.0"
+                    app:stepValue="0.1"
+                    app:decimalPlaces="1"
+                    android:dependency="@string/pref_tone_equalizer_enabled" />
+
+                <amirz.library.settings.SliderPreference
+                    android:key="@string/pref_tone_eq_speculars"
+                    android:title="@string/pref_tone_eq_speculars_title"
+                    android:defaultValue="@integer/pref_tone_eq_speculars_default"
+                    app:minValue="-2.0"
+                    app:maxValue="2.0"
+                    app:stepValue="0.1"
+                    app:decimalPlaces="1"
+                    android:dependency="@string/pref_tone_equalizer_enabled" />
+
+                <PreferenceCategory android:title="Edge-Aware Settings" />
+
+                <amirz.library.settings.SliderPreference
+                    android:key="@string/pref_tone_eq_smoothing"
+                    android:title="@string/pref_tone_eq_smoothing_title"
+                    android:summary="@string/pref_tone_eq_smoothing_desc"
+                    android:defaultValue="@integer/pref_tone_eq_smoothing_default"
+                    app:minValue="1.0"
+                    app:maxValue="20.0"
+                    app:stepValue="0.5"
+                    app:decimalPlaces="1"
+                    android:dependency="@string/pref_tone_equalizer_enabled" />
+
+                <amirz.library.settings.SliderPreference
+                    android:key="@string/pref_tone_eq_feathering"
+                    android:title="@string/pref_tone_eq_feathering_title"
+                    android:summary="@string/pref_tone_eq_feathering_desc"
+                    android:defaultValue="@integer/pref_tone_eq_feathering_default"
+                    app:minValue="0.1"
+                    app:maxValue="5.0"
+                    app:stepValue="0.1"
+                    app:decimalPlaces="1"
+                    android:dependency="@string/pref_tone_equalizer_enabled" />
+
+                <SwitchPreference
+                    android:key="@string/pref_tone_equalizer_autotune"
+                    android:title="@string/pref_tone_equalizer_autotune_title"
+                    android:summary="@string/pref_tone_equalizer_autotune_desc"
+                    android:defaultValue="@bool/pref_tone_equalizer_autotune_default"
+                    android:dependency="@string/pref_tone_equalizer_enabled" />
+
+                <Preference
+                    android:key="@string/pref_tone_eq_reset"
+                    android:title="@string/pref_tone_eq_reset_title"
+                    android:summary="@string/pref_tone_eq_reset_desc"
+                    android:persistent="false" />
+
+            </PreferenceScreen>
+            -->
+
+            <Preference
+                android:key="@string/pref_advanced_options_reset"
+                android:title="@string/pref_advanced_options_reset_title"
+                android:summary="@string/pref_advanced_options_reset_desc"
+                android:persistent="false" />
+
+        </PreferenceScreen>
 
     </PreferenceCategory>
 

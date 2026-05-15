@@ -29,6 +29,7 @@ public class Texture implements AutoCloseable {
     private final int mChannels;
     private final Format mFormat;
     private final int mTexId;
+    private int mFrameBufferId = -1;  // Cached framebuffer (created on first use)
     private ByteBuffer mBuffer;
     private Runnable mCloseOverride;
 
@@ -75,18 +76,76 @@ public class Texture implements AutoCloseable {
     }
 
     public void setPixels(byte[] bytes) {
-        if (mBuffer == null) {
-            mBuffer = ByteBuffer.allocateDirect(bytes.length);
+        // For large textures, upload in chunks to avoid allocating huge DirectByteBuffers
+        // This prevents OutOfMemoryError when processing multiple files
+        final int CHUNK_SIZE = 10 * 1024 * 1024; // 10MB chunks
+        
+        if (bytes.length <= CHUNK_SIZE) {
+            // Small enough to upload in one go
+            if (mBuffer == null || mBuffer.capacity() < bytes.length) {
+                mBuffer = ByteBuffer.allocateDirect(bytes.length);
+            } else {
+                mBuffer.clear();
+            }
+            mBuffer.put(bytes);
+            mBuffer.flip();
+            setPixels(mBuffer);
+        } else {
+            // Large texture - upload in chunks to avoid OOM
+            int bytesPerPixel = getBytesPerPixel();
+            int rowStride = mWidth * bytesPerPixel;
+            int rowsPerChunk = Math.max(1, CHUNK_SIZE / rowStride);
+            int chunkHeight = rowsPerChunk;
+            
+            // Allocate reusable chunk buffer
+            if (mBuffer == null || mBuffer.capacity() < CHUNK_SIZE) {
+                mBuffer = ByteBuffer.allocateDirect(CHUNK_SIZE);
+            }
+            
+            glActiveTexture(GL_TEXTURE16);
+            glBindTexture(GL_TEXTURE_2D, mTexId);
+            
+            int offset = 0;
+            int remainingHeight = mHeight;
+            int y = 0;
+            
+            while (remainingHeight > 0) {
+                int currentChunkHeight = Math.min(chunkHeight, remainingHeight);
+                int chunkSize = currentChunkHeight * rowStride;
+                
+                // Clear and fill buffer with chunk data
+                mBuffer.clear();
+                mBuffer.put(bytes, offset, chunkSize);
+                mBuffer.flip();
+                
+                // Upload this chunk
+                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, y, mWidth, currentChunkHeight, 
+                               format(), type(), mBuffer);
+                
+                offset += chunkSize;
+                y += currentChunkHeight;
+                remainingHeight -= currentChunkHeight;
+            }
         }
-        mBuffer.put(bytes);
-        mBuffer.flip();
-        setPixels(mBuffer);
+    }
+    
+    private int getBytesPerPixel() {
+        switch (mFormat) {
+            case UInt16:
+                return mChannels * 2; // 2 bytes per channel
+            case Float16:
+                return mChannels * 2; // 16-bit float = 2 bytes
+            default:
+                return mChannels * 2;
+        }
     }
 
     public void setPixels(Buffer buffer) {
         // Use a high ID to update buffer.
         glActiveTexture(GL_TEXTURE16);
         glBindTexture(GL_TEXTURE_2D, mTexId);
+        // Note: glTexSubImage2D requires texture storage to already be allocated
+        // (done in constructor via glTexImage2D)
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, mWidth, mHeight, format(), type(), buffer);
     }
 
@@ -114,11 +173,16 @@ public class Texture implements AutoCloseable {
     */
 
     public void setFrameBuffer() {
-        // Configure frame buffer
-        int[] frameBuffer = new int[1];
-        glGenFramebuffers(1, frameBuffer, 0);
-        glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer[0]);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTexId, 0);
+        // Create framebuffer on first use, then reuse
+        if (mFrameBufferId == -1) {
+            int[] frameBuffer = new int[1];
+            glGenFramebuffers(1, frameBuffer, 0);
+            mFrameBufferId = frameBuffer[0];
+            glBindFramebuffer(GL_FRAMEBUFFER, mFrameBufferId);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTexId, 0);
+        } else {
+            glBindFramebuffer(GL_FRAMEBUFFER, mFrameBufferId);
+        }
 
         glViewport(0, 0, mWidth, mHeight);
     }
@@ -153,7 +217,16 @@ public class Texture implements AutoCloseable {
             mCloseOverride.run();
             return;
         }
+        // Delete framebuffer if we created one
+        if (mFrameBufferId != -1) {
+            glDeleteFramebuffers(1, new int[] { mFrameBufferId }, 0);
+            mFrameBufferId = -1;
+        }
         glDeleteTextures(1, new int[] { mTexId }, 0);
+        // Clear DirectByteBuffer reference to help GC reclaim native memory
+        // Note: DirectByteBuffers hold native memory that's freed when the buffer is GC'd
+        // Explicitly clearing the reference helps the GC know it can be collected
+        mBuffer = null;
     }
 
     private int internalFormat() {

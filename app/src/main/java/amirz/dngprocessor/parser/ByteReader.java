@@ -1,8 +1,9 @@
 package amirz.dngprocessor.parser;
 
 import android.content.Context;
+import android.util.Log;
+import androidx.exifinterface.media.ExifInterface;
 import android.net.Uri;
-import android.support.media.ExifInterface;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -12,6 +13,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class ByteReader {
+    private static final String TAG = "ByteReader";
+
     public static class ReaderWithExif {
         public final ExifInterface exif;
         public final ByteBuffer wrap;
@@ -31,7 +34,7 @@ public class ByteReader {
                 bytes = fromStream(stream);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Failed to read bytes from URI: " + uri, e);
         }
 
         if (bytes != null) {
@@ -39,7 +42,7 @@ public class ByteReader {
             try (ByteArrayInputStream stream = new ByteArrayInputStream(bytes)) {
                 exif = new ExifInterface(stream);
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(TAG, "Failed to parse EXIF data", e);
             }
 
             if (exif != null) {

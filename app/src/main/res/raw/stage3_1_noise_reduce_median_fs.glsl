@@ -10,7 +10,7 @@ uniform sampler2D inBuffer;
 
 uniform int radiusDenoise;
 
-out vec3 result;
+out vec4 result;
 
 #include load3x3v3
 
@@ -33,7 +33,18 @@ void main() {
 
     vec3 minVert = min(min(medianTop, medianMid), medianBot);
     vec3 maxVert = max(max(medianTop, medianMid), medianBot);
-    result = medianTop + medianMid + medianBot - minVert - maxVert;
+    vec3 median = medianTop + medianMid + medianBot - minVert - maxVert;
+    
+    // Re-encode HDR luminance - only if Y > 1.0 to avoid quantization
+    float Y = median.z;
+    if (Y <= 1.0) {
+        // Y already in [0,1] - no encoding needed, use alpha=1.0 as marker
+        result = vec4(median.xy, Y, 1.0);
+    } else {
+        // HDR value - encode with scaling
+        float hdrScale = Y;
+        result = vec4(median.xy, Y / hdrScale, 1.0 / hdrScale);
+    }
     return;
 
     /*

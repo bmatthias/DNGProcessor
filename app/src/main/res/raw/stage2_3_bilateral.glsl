@@ -10,8 +10,8 @@ uniform ivec2 bufSize;
 uniform vec2 sigma;
 uniform ivec2 radius;
 
-// Out
-out vec3 result;
+// Out (must be vec4 because RGB16F is not color-renderable in GLES 3.0)
+out vec4 result;
 
 #include gaussian
 
@@ -48,10 +48,17 @@ float pixDiff(vec3 pix1, vec3 pix2, float noise) {
 }
 */
 
+// Helper to decode HDR xyY (alpha = 1/scale)
+vec3 decodeHDRxyY(vec4 encoded) {
+    float invScale = max(encoded.w, 0.0001);
+    return vec3(encoded.x, encoded.y, encoded.z / invScale);
+}
+
 void main() {
     ivec2 xyCenter = ivec2(gl_FragCoord.xy);
 
-    vec3 XYZCenter = texelFetch(buf, xyCenter, 0).xyz;
+    // Decode HDR luminance
+    vec3 XYZCenter = decodeHDRxyY(texelFetch(buf, xyCenter, 0));
 
     ivec2 minxy = max(ivec2(0, 0), xyCenter - radius.x);
     ivec2 maxxy = min(bufSize - 1, xyCenter + radius.x);
@@ -63,7 +70,8 @@ void main() {
         for (int x = minxy.x; x <= maxxy.x; x += radius.y) {
             ivec2 xyPixel = ivec2(x, y);
 
-            vec3 XYZPixel = texelFetch(buf, xyPixel, 0).xyz;
+            // Decode HDR luminance for each pixel
+            vec3 XYZPixel = decodeHDRxyY(texelFetch(buf, xyPixel, 0));
 
             vec2 dxy = vec2(xyPixel - xyCenter);
 
@@ -73,9 +81,15 @@ void main() {
         }
     }
 
+    vec3 blurred;
     if (W < 0.0001f) {
-        result = XYZCenter;
+        blurred = XYZCenter;
     } else {
-        result = I / W;
+        blurred = I / W;
     }
+    
+    // Re-encode HDR luminance
+    float Y = blurred.z;
+    float hdrScale = max(Y, 1.0);
+    result = vec4(blurred.x, blurred.y, Y / hdrScale, 1.0 / hdrScale);
 }

@@ -8,13 +8,31 @@
     <string name="pref_reprocess_summary">The last processed image</string>
 
     <string name="category_files">Files</string>
+    <string name="category_files_options">File Options</string>
+    <string name="category_files_options_desc">File management settings</string>
+    <string name="category_color_grading">Color Grading</string>
     <string name="pref_background_process_title">Background processing</string>
     <string name="pref_background_process_desc">Automatically detect new files</string>
-    <string name="pref_delete_original_title">Delete original</string>
-    <string name="pref_delete_original_desc">Remove files that were successfully processed</string>
-    <string name="pref_suffix_title">Add suffix</string>
-    <string name="pref_suffix_desc">Append DNGP to the new file name</string>
+    <string name="pref_delete_original_jpeg_title">Delete original JPEG</string>
+    <string name="pref_delete_original_jpeg_desc">Remove original JPEG files after successful processing</string>
+    <string name="pref_jpeg_location_title">Original JPEG location</string>
+    <string name="pref_delete_original_title">Delete original DNG</string>
+    <string name="pref_delete_original_desc">Remove DNG files that were successfully processed</string>
+    <string name="pref_delete_original_warning_title">Warning: Delete Original Files</string>
+    <string name="pref_delete_original_warning_message">Enabling this option will permanently delete the original DNG files after successful processing. This action cannot be undone. Are you sure you want to enable this feature?</string>
+    <string name="pref_skip_existing_title">Skip existing</string>
+    <string name="pref_skip_existing_desc">Skip processing if output JPEG already exists</string>
+    <string name="pref_move_original_warning_title">Warning: Move Original Files</string>
+    <string name="pref_move_original_warning_message">Enabling this option will move the original DNG files to the specified directory after successful processing. Are you sure you want to enable this feature?</string>
+    <string name="pref_suffix_title">Replace IMG prefix</string>
+    <string name="pref_suffix_desc">Replace the IMG prefix in the file name</string>
+    <string name="pref_replace_prefix_text_title">Replacement prefix</string>
+    <string name="pref_add_suffix_title">Add suffix</string>
+    <string name="pref_add_suffix_desc">Append a suffix to the file name (before extension)</string>
+    <string name="pref_add_suffix_text_title">Suffix text</string>
     <string name="pref_save_path_title">Save directory</string>
+    <string name="pref_jpeg_quality_title">JPEG Quality</string>
+    <string name="pref_jpeg_quality_desc">Output JPEG compression quality (0-100)</string>
 
     <string name="category_saturation_map">Saturation map</string>
     <string name="category_saturation_map_desc">Tweak intensity per hue</string>
@@ -30,26 +48,261 @@
     <string name="pref_saturation_reset_title">Reset</string>
     <string name="pref_saturation_reset_desc">Restore to default values</string>
 
-    <string name="category_pipeline">Pipeline</string>
+    <string name="category_processing">Processing</string>
+    <string name="category_color_tone">Color &amp; Tone</string>
+    <string name="category_detail_enhancement">Detail &amp; Enhancement</string>
+    <string name="category_advanced_options">Advanced Options</string>
+    <string name="category_advanced_options_desc">Advanced processing features</string>
     <string name="pref_post_process_title">Post processing mode</string>
     <string name="post_processing_disabled">Disabled</string>
+    <string name="post_processing_classic">Classic</string>
     <string name="post_processing_natural">Natural</string>
     <string name="post_processing_boosted">Boosted</string>
+    <string name="post_processing_mat">MAT</string>
+    <string name="post_processing_leica_m9">Leica M9</string>
+    <string name="pref_mat_mode_options_title">MAT mode options</string>
+    <string name="pref_mat_mode_options_desc">Special MAT processing features</string>
+    <string name="pref_mat_green_to_yellow_shift_title">Green to yellow shift</string>
+    <string name="pref_mat_green_to_yellow_shift_desc">Shift desaturated greens near yellow toward yellow for natural look</string>
+    <string name="pref_mat_yellow_to_warm_shift_title">Yellow to warm shift</string>
+    <string name="pref_mat_yellow_to_warm_shift_desc">Shift yellow-orange tones toward red/magenta for subtle warmth</string>
+    <string name="pref_mat_highlight_bloom_title">Highlight bloom</string>
+    <string name="pref_mat_highlight_bloom_desc">Add soft glow to highlights for dreamy aesthetic</string>
+    <string name="pref_mat_highlight_desaturation_title">Highlight desaturation</string>
+    <string name="pref_mat_highlight_desaturation_desc">Desaturate highlights for Leica-like look</string>
+    <string name="pref_mat_shadow_richness_title">Shadow richness</string>
+    <string name="pref_mat_shadow_richness_desc">Enhance shadow depth while preserving detail</string>
+    <string name="pref_mat_vignetting_title">Vignetting</string>
+    <string name="pref_mat_vignetting_desc">Add subtle edge darkening for Leica-like aesthetic</string>
+    <string name="pref_mat_soft_highlight_rolloff_title">Soft highlight rolloff</string>
+    <string name="pref_mat_soft_highlight_rolloff_desc">Apply gentle highlight compression for smoother transitions</string>
     <string name="pref_noise_reduce_title">Noise reduction</string>
     <string name="pref_noise_reduce_desc">Removes chromatic irregularities</string>
     <string name="pref_expose_fuse_title">Exposure fusion</string>
-    <string name="pref_expose_fuse_desc">Compresses dynamic range</string>
-    <string name="pref_lce_title">Local contrast enhancement</string>
-    <string name="pref_lce_desc">Sharpens details for a crunchier look</string>
+    <string name="pref_expose_fuse_desc">Improves dynamic range</string>
+    <string name="pref_expose_fusion_method_title">Fusion method</string>
+    <string name="pref_expose_fusion_method_desc">Laplacian pyramids provide seamless blending but are slower. Full Mertens uses contrast, saturation, and well-exposedness. Simple Mertens uses only well-exposedness (fastest).</string>
+    <string name="expose_fusion_method_laplacian">Laplacian Pyramids (Quality)</string>
+    <string name="expose_fusion_method_fullmertens">Full Mertens (Quality)</string>
+    <string name="expose_fusion_method_mertens">Simple Mertens (Speed)</string>
+    <string name="category_lce">Local Contrast Enhancement</string>
+    <string name="category_lce_desc">Multi-scale contrast enhancement controls</string>
+    <string name="pref_lce_title">Enable LCE</string>
+    <string name="pref_lce_desc">Enable local contrast enhancement</string>
+    <string name="pref_lce_method_title">LCE method</string>
+    <string name="pref_lce_method_desc">Choose method applied to all scales: CLAHE uses CPU-based histogram equalization. LCE uses GPU multiplicative contrast. GPU CLAHE uses GPU CDF-based approximation.</string>
+    <string name="lce_method_lce">LCE (Multiplicative)</string>
+    <string name="lce_method_clahe">CLAHE (Adaptive Histogram)</string>
+    <string name="lce_method_fastclahe">GPU CLAHE (CDF-Based)</string>
+    
+    <!-- LCE Radii -->
+    <string name="pref_lce_radius_weak_title">Weak radius (%)</string>
+    <string name="pref_lce_radius_medium_title">Medium radius (%)</string>
+    <string name="pref_lce_radius_strong_title">Strong radius (%)</string>
+    <string name="pref_lce_radius_xfine_title">XFine radius (%)</string>
+    <string name="pref_lce_radius_fine_title">Fine radius (%)</string>
+    <string name="pref_lce_radius_xstrong_title">XStrong radius (%)</string>
+    
+    <!-- LCE Strengths -->
+    <string name="pref_lce_strength_weak_title">Weak strength</string>
+    <string name="pref_lce_strength_medium_title">Medium strength</string>
+    <string name="pref_lce_strength_strong_title">Strong strength</string>
+    <string name="pref_lce_strength_xfine_title">XFine strength</string>
+    <string name="pref_lce_strength_fine_title">Fine strength</string>
+    <string name="pref_lce_strength_xstrong_title">XStrong strength</string>
+    
+    <!-- LCE Limits -->
+    <string name="pref_lce_limit_weak_title">Weak limit</string>
+    <string name="pref_lce_limit_medium_title">Medium limit</string>
+    <string name="pref_lce_limit_strong_title">Strong limit</string>
+    <string name="pref_lce_limit_xfine_title">XFine limit</string>
+    <string name="pref_lce_limit_fine_title">Fine limit</string>
+    <string name="pref_lce_limit_xstrong_title">XStrong limit</string>
+    
+    <!-- LCE Methods per scale -->
+    <string name="pref_lce_method_weak_title">Weak method</string>
+    <string name="pref_lce_method_weak_desc">Contrast method for weak radius</string>
+    <string name="pref_lce_method_medium_title">Medium method</string>
+    <string name="pref_lce_method_medium_desc">Contrast method for medium radius</string>
+    <string name="pref_lce_method_strong_title">Strong method</string>
+    <string name="pref_lce_method_strong_desc">Contrast method for strong radius</string>
+    <string name="pref_lce_method_xfine_title">XFine method</string>
+    <string name="pref_lce_method_xfine_desc">Contrast method for xfine radius</string>
+    <string name="pref_lce_method_fine_title">Fine method</string>
+    <string name="pref_lce_method_fine_desc">Contrast method for fine radius</string>
+    <string name="pref_lce_method_xstrong_title">XStrong method</string>
+    <string name="pref_lce_method_xstrong_desc">Contrast method for xstrong radius</string>
+    
+    <!-- LCE Reset buttons -->
+    <string name="pref_lce_reset_xstrong_title">Reset XStrong</string>
+    <string name="pref_lce_reset_xstrong_desc">Restore XStrong to default values</string>
+    
+    <string name="pref_lce_reset_strong_title">Reset Strong</string>
+    <string name="pref_lce_reset_strong_desc">Restore Strong to default values</string>
+    
+    <string name="pref_lce_reset_medium_title">Reset Medium</string>
+    <string name="pref_lce_reset_medium_desc">Restore Medium to default values</string>
+    
+    <string name="pref_lce_reset_weak_title">Reset Weak</string>
+    <string name="pref_lce_reset_weak_desc">Restore Weak to default values</string>
+    
+    <string name="pref_lce_reset_fine_title">Reset Fine</string>
+    <string name="pref_lce_reset_fine_desc">Restore Fine to default values</string>
+    
+    <string name="pref_lce_reset_xfine_title">Reset XFine</string>
+    <string name="pref_lce_reset_xfine_desc">Restore XFine to default values</string>
     <string name="pref_ahe_title">Adaptive histogram equalization</string>
     <string name="pref_ahe_desc">Improves visibility in high dynamic range scenes</string>
+    <string name="pref_edge_aware_hist_eq_title">Edge-aware histogram equalization</string>
+    <string name="pref_edge_aware_hist_eq_desc">Uses bilateral filter to preserve edges during histogram equalization</string>
+    <string name="pref_reference_preview_title">Match embedded JPEG</string>
+    <string name="pref_reference_preview_desc">Use embedded preview to guide tone mapping</string>
+    <string name="pref_hist_match_strength_title">Histogram matching strength</string>
+    <string name="pref_hist_match_strength_desc">Strength of histogram matching (0.0 = no matching, 1.0 = full matching)</string>
     <string name="pref_forward_matrix_title">Forward matrix</string>
     <string name="pref_forward_matrix_desc">Device specific tuning</string>
     <string name="pref_gain_map_title">Gain map</string>
     <string name="pref_gain_map_desc">Improves dynamic range</string>
+    <string name="pref_demosaicing_method_title">Demosaicing method</string>
+    <string name="pref_demosaicing_method_desc">Algorithm used for demosaicing raw sensor data</string>
+    <string name="demosaicing_method_bilinear">Bilinear (Laroche-Prescott/Su)</string>
+    <string name="demosaicing_method_dht">DHT (Directional High-quality Threshold)</string>
+    <string name="demosaicing_method_aahd">AAHD (Adaptive Anti-aliasing High-quality) - Coming soon</string>
+    <string name="pref_baseline_exposure_compression_title">Baseline exposure compression</string>
+    <string name="pref_baseline_exposure_compression_desc">Compression method for baseline exposure adjustment</string>
+    <string name="pref_hdr_compression_method_title">HDR compression method</string>
+    <string name="pref_hdr_compression_method_desc">Compression method for HDR highlights in tone mapping</string>
+    <string name="pref_experimental_settings_title">Enable experimental settings</string>
+    <string name="pref_experimental_settings_desc">Show advanced experimental processing options</string>
+    <string name="pref_experimental_settings_warning_title">Experimental Settings</string>
+    <string name="pref_experimental_settings_warning_message">Experimental settings may cause unexpected behavior or image quality issues. Use at your own risk.</string>
+    <string name="pref_advanced_options_reset_title">Reset advanced options</string>
+    <string name="pref_advanced_options_reset_desc">Restore all advanced options to default values</string>
+    <string name="pref_ultra_hdr_title">Ultra HDR JPEG</string>
+    <string name="pref_ultra_hdr_desc">Create Ultra HDR JPEG files with embedded gain maps (Android 14+)</string>
+    <string name="pref_save_hdr_gain_map_title">Save HDR + gain map</string>
+    <string name="pref_save_hdr_gain_map_desc">Save HDR frame and gain map as separate PNG files (_hdr.png and _gainmap.png)</string>
+    <string name="pref_save_exposure_fusion_frames_title">Save exposure fusion frames</string>
+    <string name="pref_save_exposure_fusion_frames_desc">Save underexposed, normal, and overexposed frames as separate PNG files</string>
+    <string name="pref_copy_gain_map_from_jpeg_title">Copy Gain Map from JPEG</string>
+    <string name="pref_copy_gain_map_from_jpeg_desc">Copy gain map from embedded JPEG preview instead of generating one (mutually exclusive with Ultra HDR)</string>
+
+    <string name="category_sharpening_noise">Sharpening &amp; Noise</string>
+    <string name="category_sharpening_noise_desc">Detail and noise control</string>
+    <string name="pref_sharpening_title">Sharpening</string>
+    <string name="pref_noise_reduction_title">Noise Reduction</string>
+    <string name="pref_force_noise_reduction_title">Force Noise Reduction</string>
+    <string name="pref_force_noise_reduction_desc">Apply noise reduction at full strength regardless of EXIF metadata</string>
+    <string name="pref_wavelet_noise_reduction_title">Wavelet Noise Reduction</string>
+    <string name="pref_wavelet_noise_reduction_desc">Use darktable-style edge-aware wavelet denoising (better quality, slower). Disable to use faster bilateral filtering.</string>
+
+    <string name="category_color_transform">Color Transform</string>
+    <string name="category_color_transform_desc">RGB color mixing matrix</string>
+    <string name="pref_color_transform_rr_title">RR (Red → Red)</string>
+    <string name="pref_color_transform_rg_title">RG (Green → Red)</string>
+    <string name="pref_color_transform_rb_title">RB (Blue → Red)</string>
+    <string name="pref_color_transform_gr_title">GR (Red → Green)</string>
+    <string name="pref_color_transform_gg_title">GG (Green → Green)</string>
+    <string name="pref_color_transform_gb_title">GB (Blue → Green)</string>
+    <string name="pref_color_transform_br_title">BR (Red → Blue)</string>
+    <string name="pref_color_transform_bg_title">BG (Green → Blue)</string>
+    <string name="pref_color_transform_bb_title">BB (Blue → Blue)</string>
+    <string name="pref_color_transform_reset_title">Reset</string>
+    <string name="pref_color_transform_reset_desc">Restore to identity matrix</string>
+
+    <string name="category_tone_adjustments">Tone Adjustments</string>
+    <string name="category_tone_adjustments_desc">Tone mapping controls</string>
+    <string name="pref_tone_curve_title">Tone Curve</string>
+    <string name="pref_tone_curve_desc">Tap to edit curve</string>
+    <string name="pref_tone_curve_enabled_title">Use custom tone curve</string>
+    <string name="pref_tone_curve_enabled_desc">Apply the edited tone curve to processed images</string>
+    <string name="pref_tone_exposure_title">Exposure</string>
+    <string name="pref_tone_highlights_title">Highlights</string>
+    <string name="pref_tone_shadows_title">Shadows</string>
+    <string name="pref_tone_whites_title">Whites</string>
+    <string name="pref_tone_contrast_title">Contrast</string>
+    <string name="pref_tone_blacks_title">Blacks</string>
+    <string name="pref_tone_texture_title">Texture</string>
+    <string name="pref_tone_clarity_title">Clarity</string>
+    <string name="pref_tone_dehaze_title">Dehaze</string>
+    <string name="pref_tone_vibrance_title">Vibrance</string>
+    <string name="pref_tone_saturation_title">Saturation</string>
+    <string name="pref_external_lut_path_title">External LUT File</string>
+    <string name="pref_external_lut_path_desc">Select a .cube LUT file for color grading</string>
+    <string name="pref_external_lut_clear_title">Clear LUT</string>
+    <string name="pref_external_lut_clear_desc">Remove the selected LUT file</string>
+    <string name="pref_tone_reset_title">Reset tone adjustments</string>
+    <string name="pref_tone_reset_desc">Restore to default values</string>
+
+    <!-- Adaptive Saturation -->
+    <string name="category_adaptive_saturation">Adaptive Saturation</string>
+    <string name="category_adaptive_saturation_desc">Scene-aware saturation based on Light Value</string>
+    <string name="pref_adaptive_saturation_curve_title">Adaptive Saturation Curve</string>
+    <string name="pref_adaptive_saturation_curve_desc">Edit saturation vs Light Value curve</string>
+    <string name="pref_adaptive_saturation_curve_enabled_title">Use adaptive saturation curve</string>
+    <string name="pref_adaptive_saturation_curve_enabled_desc">Vary saturation strength based on scene Light Value</string>
+    <string name="pref_hist_factor_title">Histogram Factor</string>
+    <string name="pref_hist_factor_desc">Controls histogram equalization strength (0 = off, 1 = full)</string>
+    <string name="pref_adaptive_saturation_power_title">Vibrance Offset</string>
+    <string name="pref_adaptive_saturation_power_desc">Offset added to base vibrance calculation</string>
+    <string name="pref_adaptive_saturation_reset_title">Reset adaptive saturation</string>
+    <string name="pref_adaptive_saturation_reset_desc">Restore to default values</string>
+    
+    <!-- Local Laplacian Filter (darktable-style local contrast) -->
+    <string name="category_local_laplacian">Local Laplacian Filter</string>
+    <string name="category_local_laplacian_desc">Edge-aware local contrast (replaces LCE/Exposure Fusion)</string>
+    <string name="pref_local_laplacian_enabled_title">Enable Local Laplacian</string>
+    <string name="pref_local_laplacian_enabled_desc">Uses darktable-style pyramid-based local contrast for halo-free shadow/highlight control</string>
+    <string name="pref_local_laplacian_shadows_title">Shadows</string>
+    <string name="pref_local_laplacian_shadows_desc">Shadow boost factor (1.0 = no change, >1 = lift shadows)</string>
+    <string name="pref_local_laplacian_highlights_title">Highlights</string>
+    <string name="pref_local_laplacian_highlights_desc">Highlight compression (1.0 = no change, &lt;1 = compress highlights)</string>
+    <string name="pref_local_laplacian_clarity_title">Clarity</string>
+    <string name="pref_local_laplacian_clarity_desc">Local contrast / midtone detail boost</string>
+    <string name="pref_local_laplacian_sigma_title">Midtone Width</string>
+    <string name="pref_local_laplacian_sigma_desc">Transition width between shadows/midtones/highlights</string>
+    <string name="pref_local_laplacian_reset_title">Reset Local Laplacian</string>
+    <string name="pref_local_laplacian_reset_desc">Restore to default values</string>
+    <string name="pref_local_laplacian_autotune">local_laplacian_autotune</string>
+    <string name="pref_local_laplacian_autotune_title">Auto-Tune</string>
+    <string name="pref_local_laplacian_autotune_desc">Automatically adjust parameters based on image histogram</string>
+    
+    <!-- Tone Equalizer (EV-band based adjustment) -->
+    <string name="category_tone_equalizer">Tone Equalizer</string>
+    <string name="category_tone_equalizer_desc">EV-band based exposure adjustment like an audio equalizer</string>
+    <string name="pref_tone_equalizer_enabled_title">Enable Tone Equalizer</string>
+    <string name="pref_tone_equalizer_enabled_desc">Adjust exposure by luminance zones using guided filter for edge-awareness</string>
+    <string name="pref_tone_eq_blacks_title">Blacks (-8 EV)</string>
+    <string name="pref_tone_eq_deep_shadows_title">Deep Shadows (-7 EV)</string>
+    <string name="pref_tone_eq_shadows_title">Shadows (-6 EV)</string>
+    <string name="pref_tone_eq_light_shadows_title">Light Shadows (-5 EV)</string>
+    <string name="pref_tone_eq_midtones_title">Midtones (-4 EV)</string>
+    <string name="pref_tone_eq_dark_highlights_title">Dark Highlights (-3 EV)</string>
+    <string name="pref_tone_eq_highlights_title">Highlights (-2 EV)</string>
+    <string name="pref_tone_eq_whites_title">Whites (-1 EV)</string>
+    <string name="pref_tone_eq_speculars_title">Speculars (0 EV)</string>
+    <string name="pref_tone_eq_smoothing_title">Smoothing Diameter</string>
+    <string name="pref_tone_eq_smoothing_desc">Edge-aware mask smoothing (%)</string>
+    <string name="pref_tone_eq_feathering_title">Edge Feathering</string>
+    <string name="pref_tone_eq_feathering_desc">Edge preservation strength for mask</string>
+    <string name="pref_tone_eq_reset_title">Reset Tone Equalizer</string>
+    <string name="pref_tone_eq_reset_desc">Restore to default values</string>
+    <string name="pref_tone_equalizer_autotune">tone_equalizer_autotune</string>
+    <string name="pref_tone_equalizer_autotune_title">Auto-Tune</string>
+    <string name="pref_tone_equalizer_autotune_desc">Automatically adjust EV bands based on image histogram</string>
 
     <string name="category_other">Other</string>
     <string name="pref_donate_title">Donate</string>
     <string name="pref_donate_desc">Support my work</string>
     <string name="pref_donate_url">https://play.google.com/store/apps/details?id=amirz.donation</string>
+
+    <string name="pref_pipeline_status_title">Processing Pipeline</string>
+    <string name="pref_pipeline_status_summary">Manage active processing tasks</string>
+    <string name="pipeline_status_empty">No files in queue</string>
+    <string name="pipeline_status_format">%1$d file(s) in queue (%2$s)</string>
+    <string name="pipeline_status_running">running</string>
+    <string name="pipeline_status_paused">paused</string>
+    <string name="pipeline_pause">Pause</string>
+    <string name="pipeline_resume">Resume</string>
+    <string name="pipeline_cancel">Cancel All</string>
 </resources>

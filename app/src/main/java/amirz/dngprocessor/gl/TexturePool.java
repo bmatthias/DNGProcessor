@@ -7,13 +7,41 @@ import java.util.Set;
 
 public class TexturePool extends GLResource {
     private static final String TAG = "TexturePool";
+    
+    // Thread-local for current context's texture pool (set during pipeline execution)
+    private static final ThreadLocal<TexturePool> sCurrentPool = new ThreadLocal<>();
 
-    public static TexturePool getInstance() {
-        return GLCore.getInstance().getComponent(TexturePool.class, TexturePool::new);
+    /**
+     * Get TexturePool instance for the given context.
+     * Each context has its own pool.
+     */
+    public static TexturePool getInstance(GLContext glContext) {
+        return glContext.getComponent(TexturePool.class, TexturePool::new);
+    }
+    
+    /**
+     * Set the current thread's texture pool. Called at start of pipeline execution.
+     */
+    public static void setCurrent(TexturePool pool) {
+        sCurrentPool.set(pool);
+    }
+    
+    /**
+     * Clear the current thread's texture pool. Called at end of pipeline execution.
+     */
+    public static void clearCurrent() {
+        sCurrentPool.remove();
     }
 
+    /**
+     * Get a texture from the current thread's pool.
+     */
     public static Texture get(int width, int height, int channels, Texture.Format format) {
-        return getInstance().getTex(width, height, channels, format);
+        TexturePool pool = sCurrentPool.get();
+        if (pool == null) {
+            throw new IllegalStateException("No TexturePool set for current thread");
+        }
+        return pool.getTex(width, height, channels, format);
     }
 
     public static Texture get(Texture texture) {
@@ -62,8 +90,11 @@ public class TexturePool extends GLResource {
         mPool.clear();
     }
 
-    public static void logLeaks() {
-        for (Texture tex : getInstance().mGrants) {
+    /**
+     * Log any textures that weren't returned to the pool.
+     */
+    public void logLeaks() {
+        for (Texture tex : mGrants) {
             Log.d(TAG, "Leaked texture: " + tex);
         }
     }

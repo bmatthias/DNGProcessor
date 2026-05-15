@@ -1,0 +1,30 @@
+<resources>
+
+    <style name="SettingsTheme" parent="@android:style/Theme.Material.Settings">
+        <!-- Dark mode: use dark status bar icons -->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:actionBarTheme">@style/SettingsTheme.ActionBar</item>
+        <item name="android:colorPrimary">@color/colorPrimary</item>
+        <item name="android:colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="android:colorAccent">@color/colorAccent</item>
+        <item name="android:fitsSystemWindows">true</item>
+    </style>
+
+    <style name="SettingsTheme.ActionBar">
+        <item name="android:textColorPrimary">@color/colorAccent</item>
+        <item name="android:colorControlNormal">@color/colorAccent</item>
+    </style>
+
+    <!-- ToneCurveTheme already has dark colors, but we can ensure it respects system dark mode -->
+    <style name="ToneCurveTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:colorPrimary">#1E1E23</item>
+        <item name="android:colorPrimaryDark">#1E1E23</item>
+        <item name="android:colorAccent">#0066CC</item>
+        <item name="android:statusBarColor">#1E1E23</item>
+        <item name="android:navigationBarColor">#2A2A30</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+</resources>
+

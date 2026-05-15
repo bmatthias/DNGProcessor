@@ -6,8 +6,8 @@ uniform sampler2D intermediateBuffer;
 uniform ivec2 minxy;
 uniform ivec2 maxxy;
 
-// Out
-out vec3 intermediate;
+// Out (must be vec4 because RGB16F is not color-renderable in GLES 3.0)
+out vec4 intermediate;
 
 ivec2 mirrorOOBCoords(ivec2 coords) {
     if (coords.x < minxy.x)
@@ -25,5 +25,6 @@ ivec2 mirrorOOBCoords(ivec2 coords) {
 
 void main() {
     ivec2 xy = ivec2(gl_FragCoord.xy);
-    intermediate = texelFetch(intermediateBuffer, mirrorOOBCoords(xy), 0).xyz;
+    // Preserve the full vec4 including HDR scale in alpha channel
+    intermediate = texelFetch(intermediateBuffer, mirrorOOBCoords(xy), 0);
 }

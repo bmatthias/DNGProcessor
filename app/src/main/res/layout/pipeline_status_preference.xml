@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:minHeight="64dp">
+
+    <TextView
+        android:id="@+id/pipeline_status_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="?android:attr/textColorPrimary"
+        android:text="@string/pipeline_status_empty"
+        android:layout_marginBottom="8dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/pipeline_pause_resume_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pipeline_pause"
+            android:enabled="false"
+            android:layout_marginEnd="8dp"
+            style="?android:attr/buttonStyleSmall" />
+
+        <Button
+            android:id="@+id/pipeline_cancel_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pipeline_cancel"
+            android:enabled="false"
+            style="?android:attr/buttonStyleSmall" />
+
+    </LinearLayout>
+
+</LinearLayout>
+

@@ -30,6 +30,8 @@ void main() {
         }
     }
 
-    //result = I / W;
-    result = texelFetch(buf, xyCenter, 0).x;
+    // Gaussian blur is REQUIRED for proper Laplacian pyramid operations
+    // Without blur, aliasing artifacts cause banding in the final image
+    // The Nyquist theorem requires low-pass filtering before downsampling
+    result = I / W;
 }

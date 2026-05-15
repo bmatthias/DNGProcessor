@@ -16,10 +16,15 @@ import static android.opengl.GLES20.*;
 import static android.opengl.GLES30.*;
 
 public class GLPrograms extends GLResource {
+    private static final String TAG = "GLPrograms";
     private static final int NO_VERTEX_SHADER = -1;
 
-    public static GLPrograms getInstance(ShaderLoader shaderLoader) {
-        return GLCore.getInstance().getComponent(GLPrograms.class,
+    /**
+     * Get GLPrograms instance for the given context.
+     * Each context has its own cached instance.
+     */
+    public static GLPrograms getInstance(GLContext glContext, ShaderLoader shaderLoader) {
+        return glContext.getComponent(GLPrograms.class,
                 () -> new GLPrograms(shaderLoader));
     }
 
@@ -45,6 +50,15 @@ public class GLPrograms extends GLResource {
                 mVertexShader, mShaderLoader.readRaw(x)));
 
         glLinkProgram(program);
+        
+        // Check link status
+        int[] linkStatus = new int[1];
+        glGetProgramiv(program, GL_LINK_STATUS, linkStatus, 0);
+        if (linkStatus[0] == GL_FALSE) {
+            String log = glGetProgramInfoLog(program);
+            throw new RuntimeException("Program link error: " + log);
+        }
+        
         glUseProgram(program);
         mProgramActive = program;
 
@@ -149,6 +163,10 @@ public class GLPrograms extends GLResource {
 
     public void seti(String var, int... vals) {
         int loc = loc(var);
+        if (loc == -1) {
+            Log.w(TAG, "Uniform not found: " + var + " (value: " + Arrays.toString(vals) + ")");
+            return;
+        }
         switch (vals.length) {
             case 1: glUniform1i(loc, vals[0]); break;
             case 2: glUniform2i(loc, vals[0], vals[1]); break;
@@ -171,6 +189,10 @@ public class GLPrograms extends GLResource {
 
     public void setf(String var, float... vals) {
         int loc = loc(var);
+        if (loc == -1) {
+            Log.w(TAG, "Uniform not found: " + var + " (value: " + Arrays.toString(vals) + ")");
+            return;
+        }
         switch (vals.length) {
             case 1: glUniform1f(loc, vals[0]); break;
             case 2: glUniform2f(loc, vals[0], vals[1]); break;

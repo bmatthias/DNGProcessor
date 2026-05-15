@@ -8,3 +8,14 @@ float sigmoid(float val, float transfer) {
     }
     return val;
 }
+
+float calculateSigmoidalContrastFromGamma(float gamma) {
+    if (gamma <= 1.0) {
+        return 1.0;
+    }
+    float expTerm = 4.0 * gamma - 4.0;
+    float powTerm = pow(0.5, expTerm);
+    float powTerm2 = pow(0.5, 1.0 - 1.0 / gamma);
+    float contrastStrength = 1.8 * (1.0 - powTerm) * gamma * powTerm2;
+    return clamp(contrastStrength, 1.0, 6.0);
+}

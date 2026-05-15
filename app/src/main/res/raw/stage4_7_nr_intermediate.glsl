@@ -7,7 +7,7 @@ uniform ivec2 bufEdge;
 uniform float blendY;
 uniform vec2 sigma;
 
-out vec3 result;
+out vec4 result;
 
 #include gaussian
 
@@ -27,7 +27,10 @@ vec3[9] load3x3(ivec2 xy) {
     for (int i = 0; i < 9; i++) {
         xyPx = xy + 2 * ivec2((i % 3) - 1, (i / 3) - 1);
         xyPx = clamp(xyPx, ivec2(0), bufEdge);
-        outputArray[i] = texelFetch(buf, xyPx, 0).xyz;
+        // Decode HDR luminance: Y = z * w
+        vec4 texData = texelFetch(buf, xyPx, 0);
+        float invScale = max(texData.w, 0.001);
+        outputArray[i] = vec3(texData.x, texData.y, texData.z / invScale);
     }
     return outputArray;
 }
@@ -61,5 +64,14 @@ void main() {
         tmp.z = mix(tmp.z, impatch[4].z, blendY);
     }
 
-    result = tmp;
+    // Re-encode HDR luminance - only if Y > 1.0 to avoid quantization
+    float Y = tmp.z;
+    if (Y <= 1.0) {
+        // Y already in [0,1] - no encoding needed, use alpha=1.0 as marker
+        result = vec4(tmp.x, tmp.y, Y, 1.0);
+    } else {
+        // HDR value - encode with scaling
+        float hdrScale = Y;
+        result = vec4(tmp.x, tmp.y, Y / hdrScale, 1.0 / hdrScale);
+    }
 }

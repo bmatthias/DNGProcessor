@@ -10,7 +10,8 @@ uniform ivec2 radius;
 uniform vec2 sigma;
 uniform float blendY;
 
-out vec3 result;
+// Output (must be vec4 because RGB16F is not color-renderable in GLES 3.0)
+out vec4 result;
 
 #include gaussian
 
@@ -24,11 +25,24 @@ float gs(ivec2 diffxy) {
     return unscaledGaussian(length(vec2(diffxy.x, diffxy.y)), sigma.x);
 }
 
+// Helper to decode HDR xyY (alpha = 1/scale)
+// If alpha == 1.0, no encoding was applied
+vec3 decodeHDRxyY(vec4 encoded) {
+    if (encoded.w >= 0.9999) {
+        // No encoding was applied - Y is already correct
+        return vec3(encoded.x, encoded.y, encoded.z);
+    }
+    // Otherwise, decode: Y = encoded.z / encoded.w
+    float invScale = max(encoded.w, 0.0001);
+    return vec3(encoded.x, encoded.y, encoded.z / invScale);
+}
+
 void main() {
     ivec2 xyCenter = ivec2(gl_FragCoord.xy);
 
-    vec3 XYZCenter = texelFetch(inBuffer, xyCenter, 0).xyz;
-    vec3 noiseLevel = texelFetch(noiseTex, xyCenter / 4, 0).xyz;
+    // Decode HDR luminance
+    vec3 XYZCenter = decodeHDRxyY(texelFetch(inBuffer, xyCenter, 0));
+    vec3 noiseLevel = texelFetch(noiseTex, xyCenter / 4, 0).xyz;  // Noise is not HDR encoded
 
     ivec2 minxy = max(ivec2(0, 0), xyCenter - radius.x);
     ivec2 maxxy = min(bufSize - 1, xyCenter + radius.x);
@@ -42,7 +56,8 @@ void main() {
     for (int y = minxy.y; y <= maxxy.y; y += radius.y) {
         for (int x = minxy.x; x <= maxxy.x; x += radius.y) {
             xyPixel = ivec2(x, y);
-            XYZPixel = texelFetch(inBuffer, xyPixel, 0).xyz;
+            // Decode HDR luminance for each pixel
+            XYZPixel = decodeHDRxyY(texelFetch(inBuffer, xyPixel, 0));
 
             XYZScale = fr(XYZPixel - XYZCenter, noiseLevel) * gs(xyPixel - xyCenter);
             XYZScalef = length(XYZScale);
@@ -59,7 +74,17 @@ void main() {
         tmp.z = mix(tmp.z, XYZCenter.z, blendY);
     }
 
-    // Desaturate noisy patches.
-    tmp.xy = mix(tmp.xy, vec2(0.345703f, 0.358539f), min(0.01f * length(noiseLevel.xy) - 0.01f, 0.25f));
-    result = tmp;
+    // Desaturate noisy patches - DISABLED to preserve saturation
+    // tmp.xy = mix(tmp.xy, vec2(0.345703f, 0.358539f), min(0.01f * length(noiseLevel.xy) - 0.01f, 0.25f));
+    
+    // Re-encode HDR luminance - only if Y > 1.0 to avoid quantization
+    float Y = tmp.z;
+    if (Y <= 1.0) {
+        // Y already in [0,1] - no encoding needed, use alpha=1.0 as marker
+        result = vec4(tmp.x, tmp.y, Y, 1.0);
+    } else {
+        // HDR value - encode with scaling
+        float hdrScale = Y;
+        result = vec4(tmp.x, tmp.y, Y / hdrScale, 1.0 / hdrScale);
+    }
 }

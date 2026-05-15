@@ -11,8 +11,8 @@ uniform ivec2 radius;
 
 uniform ivec2 dir;
 
-// Out
-out vec3 result;
+// Out (must be vec4 because RGB16F is not color-renderable in GLES 3.0)
+out vec4 result;
 
 #include gaussian
 
@@ -32,5 +32,5 @@ void main() {
         }
     }
 
-    result = I / W;
+    result = vec4(I / W, 1.0);
 }

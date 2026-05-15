@@ -1,7 +1,6 @@
 package amirz.dngprocessor.colorspace;
 
 import android.util.Log;
-import android.util.Rational;
 
 import java.util.Arrays;
 
@@ -21,6 +20,17 @@ public class ColorspaceConverter {
     public float[] sensorToXYZ_D50 = new float[9];
     public float[] XYZtoProPhoto = new float[9];
     public float[] proPhotoToSRGB = new float[9];
+    
+    // YUV conversion matrix for AAHD demosaicing (Rec. 2020 YPbPr)
+    // yuv_cam = yuv_coeff * rgb_cam (where rgb_cam = inverse(sensorToXYZ))
+    public float[] yuvCamMatrix = new float[9];
+    
+    // Rec. 2020 YPbPr coefficients (from LibRaw AAHD)
+    private static final float[][] YUV_COEFF = {
+        {0.2627f, 0.6780f, 0.0593f},   // Y
+        {-0.13963f, -0.36037f, 0.5f},   // U (Pb)
+        {0.5034f, -0.4629f, -0.0405f}  // V (Pr)
+    };
 
     public ColorspaceConverter(SensorParams sensor) {
         if (sensor.outputOffsetX < 0 || sensor.outputOffsetY < 0) {
@@ -53,7 +63,18 @@ public class ColorspaceConverter {
             Log.d(TAG, "ColorMatrix2: " + Arrays.toString(sensor.colorMatrix2));
             Log.d(TAG, "ForwardTransform1: " + Arrays.toString(sensor.forwardTransform1));
             Log.d(TAG, "ForwardTransform2: " + Arrays.toString(sensor.forwardTransform2));
+            Log.d(TAG, "AnalogBalance: " + Arrays.toString(sensor.analogBalance));
             Log.d(TAG, "NeutralColorPoint: " + Arrays.toString(sensor.neutralColorPoint));
+        }
+
+        // Apply AnalogBalance to CameraCalibration matrices per DNG spec / dcraw / LibRaw / darktable:
+        // cc[i][c] *= ab[i]  (multiply each row of CC by corresponding AB value)
+        float[] calibrationTransform1 = applyAnalogBalance(sensor.calibrationTransform1, sensor.analogBalance);
+        float[] calibrationTransform2 = applyAnalogBalance(sensor.calibrationTransform2, sensor.analogBalance);
+
+        if (DEBUG) {
+            Log.d(TAG, "CalibrationTransform1 with AnalogBalance: " + Arrays.toString(calibrationTransform1));
+            Log.d(TAG, "CalibrationTransform2 with AnalogBalance: " + Arrays.toString(calibrationTransform2));
         }
 
         float[] normalizedColorMatrix1 = Arrays.copyOf(sensor.colorMatrix1, sensor.colorMatrix1.length);
@@ -70,7 +91,7 @@ public class ColorspaceConverter {
         // Calculate full sensor colorspace to sRGB colorspace transform.
         float[] sensorToXYZ = new float[9];
         double interpolationFactor = findDngInterpolationFactor(sensor.referenceIlluminant1,
-                sensor.referenceIlluminant2, sensor.calibrationTransform1, sensor.calibrationTransform2,
+                sensor.referenceIlluminant2, calibrationTransform1, calibrationTransform2,
                 normalizedColorMatrix1, normalizedColorMatrix2, sensor.neutralColorPoint,
                 sensorToXYZ);
         if (DEBUG) Log.d(TAG, "Interpolation factor used: " + interpolationFactor);
@@ -90,7 +111,7 @@ public class ColorspaceConverter {
             }
 
             calculateCameraToXYZD50TransformFM(normalizedForwardTransform1, normalizedForwardTransform2,
-                    sensor.calibrationTransform1, sensor.calibrationTransform2, sensor.neutralColorPoint,
+                    calibrationTransform1, calibrationTransform2, sensor.neutralColorPoint,
                     interpolationFactor, sensorToXYZ_D50);
         } else {
             float[] neutralColorPoint = {
@@ -118,6 +139,28 @@ public class ColorspaceConverter {
         multiply(sXYZtoSRGB, sProPhotoToXYZ, /*out*/proPhotoToSRGB);
         if (DEBUG) Log.d(TAG, "proPhotoToSRGB xform used: " + Arrays.toString(proPhotoToSRGB));
 
+        // Compute YUV conversion matrix for AAHD demosaicing
+        // First, we need rgb_cam (camera RGB to sRGB-like space)
+        // For AAHD, we use yuv_coeff directly since we're working in camera RGB space
+        // The YUV matrix converts camera RGB to YUV for homogeneity evaluation
+        computeYuvCamMatrix();
+        if (DEBUG) Log.d(TAG, "yuvCamMatrix for AAHD: " + Arrays.toString(yuvCamMatrix));
+    }
+    
+    /**
+     * Compute the YUV conversion matrix for AAHD demosaicing.
+     * This matrix converts camera RGB values to YUV for homogeneity evaluation.
+     * Uses Rec. 2020 YPbPr coefficients as in LibRaw AAHD.
+     */
+    private void computeYuvCamMatrix() {
+        // For AAHD in camera RGB space, we use the YUV coefficients directly
+        // since the sensor RGB values are already white-balanced
+        // yuv_cam[i][j] = sum(yuv_coeff[i][k] * identity[k][j]) = yuv_coeff[i][j]
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                yuvCamMatrix[i * 3 + j] = YUV_COEFF[i][j];
+            }
+        }
     }
 
     private float[] mapWhiteMatrix(float[] sensorWhiteXYZ) {
@@ -493,5 +536,40 @@ public class ColorspaceConverter {
         multiply(m, forwardMatrix, /*out*/ intermediate);
         float[] m2 = new float[]{D50_XYZ[0], 0, 0, 0, D50_XYZ[1], 0, 0, 0, D50_XYZ[2]};
         multiply(m2, intermediate, /*out*/forwardMatrix);
+    }
+
+    /**
+     * Apply AnalogBalance to CameraCalibration matrix per DNG spec.
+     * This follows dcraw/LibRaw/darktable implementation: cc[i][c] *= ab[i]
+     * Each row i of the calibration matrix is multiplied by analogBalance[i].
+     *
+     * @param calibrationTransform The 3x3 CameraCalibration matrix (row-major, 9 elements)
+     * @param analogBalance The analog balance values [R, G, B]
+     * @return A new matrix with analog balance applied
+     */
+    private static float[] applyAnalogBalance(float[] calibrationTransform, float[] analogBalance) {
+        if (calibrationTransform == null || analogBalance == null) {
+            return calibrationTransform;
+        }
+
+        float[] result = Arrays.copyOf(calibrationTransform, calibrationTransform.length);
+
+        // cc[i][c] *= ab[i] - multiply each row by the corresponding analog balance value
+        // Row 0 (indices 0,1,2): multiply by ab[0] (Red)
+        result[0] *= analogBalance[0];
+        result[1] *= analogBalance[0];
+        result[2] *= analogBalance[0];
+
+        // Row 1 (indices 3,4,5): multiply by ab[1] (Green)
+        result[3] *= analogBalance[1];
+        result[4] *= analogBalance[1];
+        result[5] *= analogBalance[1];
+
+        // Row 2 (indices 6,7,8): multiply by ab[2] (Blue)
+        result[6] *= analogBalance[2];
+        result[7] *= analogBalance[2];
+        result[8] *= analogBalance[2];
+
+        return result;
     }
 }

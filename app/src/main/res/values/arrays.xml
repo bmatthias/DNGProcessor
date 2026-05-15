@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="tone_mapping_method_names">
+        <item>Reinhard</item>
+        <item>ACES Filmic</item>
+        <item>Unreal Engine</item>
+        <item>Capture One</item>
+        <item>Darktable Filmic</item>
+        <item>Lightroom</item>
+    </string-array>
+
+    <string-array name="tone_mapping_method_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+
+    <string-array name="baseline_exposure_compression_names">
+        <item>None</item>
+        <item>Reinhard</item>
+        <item>ACES Filmic</item>
+        <item>Uncharted 2</item>
+        <item>Improved Rational</item>
+        <item>Gradient Domain</item>
+        <item>Hejl-Dawson</item>
+        <item>Modified ACES</item>
+        <item>Reinhard-Jodie</item>
+        <item>Lottes</item>
+        <item>Gamma-Based</item>
+        <item>Gamma+ACES Fusion</item>
+        <item>Exposure Slider</item>
+        <item>Sigmoidal</item>
+        <item>Piecewise</item>
+        <item>Histogram Match</item>
+        <item>LibRaw exp_bef</item>
+        <item>Exposure Fusion</item>
+    </string-array>
+
+    <string-array name="baseline_exposure_compression_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+        <item>16</item>
+        <item>17</item>
+    </string-array>
+
+    <string-array name="hdr_compression_method_names">
+        <item>Reinhard</item>
+        <item>ACES Filmic</item>
+        <item>Uncharted 2</item>
+        <item>Improved Rational</item>
+        <item>Gamma+ACES Fusion</item>
+        <item>Late Exposure Fusion</item>
+    </string-array>
+
+    <string-array name="hdr_compression_method_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+
+    <string-array name="demosaicing_method_names">
+        <item>@string/demosaicing_method_bilinear</item>
+        <item>@string/demosaicing_method_dht</item>
+        <item>@string/demosaicing_method_aahd</item>
+    </string-array>
+
+    <string-array name="demosaicing_method_values">
+        <item>bilinear</item>
+        <item>dht</item>
+        <item>aahd</item>
+    </string-array>
+</resources>
+

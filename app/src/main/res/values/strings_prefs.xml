@@ -2,11 +2,19 @@
 <resources>
     <string name="pref_reprocess">pref_reprocess</string>
     <string name="pref_manual_select">pref_manual_select</string>
+    <string name="pref_pipeline_status">pref_pipeline_status</string>
 
     <string name="pref_background_process">pref_background_process</string>
+    <string name="pref_delete_original_jpeg">pref_delete_original_jpeg</string>
+    <string name="pref_jpeg_location">pref_jpeg_location</string>
     <string name="pref_delete_original">pref_delete_original</string>
+    <string name="pref_skip_existing">pref_skip_existing</string>
     <string name="pref_suffix">pref_suffix</string>
+    <string name="pref_replace_prefix_text">pref_replace_prefix_text</string>
+    <string name="pref_add_suffix">pref_add_suffix</string>
+    <string name="pref_add_suffix_text">pref_add_suffix_text</string>
     <string name="pref_save_path">pref_save_path</string>
+    <string name="pref_jpeg_quality">pref_jpeg_quality</string>
 
     <string name="pref_saturation_mult">pref_saturation_mult</string>
     <string name="pref_saturation_r">pref_saturation_r</string>
@@ -21,10 +29,137 @@
     <string name="pref_saturation_reset">pref_saturation_reset</string>
 
     <string name="pref_post_process">pref_post_process</string>
+    <string name="pref_mat_mode_options">pref_mat_mode_options</string>
+    <string name="pref_mat_green_to_yellow_shift">pref_mat_green_to_yellow_shift</string>
+    <string name="pref_mat_yellow_to_warm_shift">pref_mat_yellow_to_warm_shift</string>
+    <string name="pref_mat_highlight_bloom">pref_mat_highlight_bloom</string>
+    <string name="pref_mat_highlight_desaturation">pref_mat_highlight_desaturation</string>
+    <string name="pref_mat_shadow_richness">pref_mat_shadow_richness</string>
+    <string name="pref_mat_vignetting">pref_mat_vignetting</string>
+    <string name="pref_mat_soft_highlight_rolloff">pref_mat_soft_highlight_rolloff</string>
     <string name="pref_noise_reduce">pref_noise_reduce</string>
     <string name="pref_expose_fuse">pref_expose_fuse</string>
+    <string name="pref_expose_fusion_method">pref_expose_fusion_method</string>
     <string name="pref_lce">pref_lce</string>
+    <string name="pref_lce_method">pref_lce_method</string>
+    
+    <!-- LCE Radii -->
+    <string name="pref_lce_radius_weak">pref_lce_radius_weak</string>
+    <string name="pref_lce_radius_medium">pref_lce_radius_medium</string>
+    <string name="pref_lce_radius_strong">pref_lce_radius_strong</string>
+    <string name="pref_lce_radius_xfine">pref_lce_radius_xfine</string>
+    <string name="pref_lce_radius_fine">pref_lce_radius_fine</string>
+    <string name="pref_lce_radius_xstrong">pref_lce_radius_xstrong</string>
+    
+    <!-- LCE Strengths -->
+    <string name="pref_lce_strength_weak">pref_lce_strength_weak</string>
+    <string name="pref_lce_strength_medium">pref_lce_strength_medium</string>
+    <string name="pref_lce_strength_strong">pref_lce_strength_strong</string>
+    <string name="pref_lce_strength_xfine">pref_lce_strength_xfine</string>
+    <string name="pref_lce_strength_fine">pref_lce_strength_fine</string>
+    <string name="pref_lce_strength_xstrong">pref_lce_strength_xstrong</string>
+    
+    <!-- LCE Limits -->
+    <string name="pref_lce_limit_weak">pref_lce_limit_weak</string>
+    <string name="pref_lce_limit_medium">pref_lce_limit_medium</string>
+    <string name="pref_lce_limit_strong">pref_lce_limit_strong</string>
+    <string name="pref_lce_limit_xfine">pref_lce_limit_xfine</string>
+    <string name="pref_lce_limit_fine">pref_lce_limit_fine</string>
+    <string name="pref_lce_limit_xstrong">pref_lce_limit_xstrong</string>
+    
+    <!-- LCE Methods per scale -->
+    <string name="pref_lce_method_weak">pref_lce_method_weak</string>
+    <string name="pref_lce_method_medium">pref_lce_method_medium</string>
+    <string name="pref_lce_method_strong">pref_lce_method_strong</string>
+    <string name="pref_lce_method_xfine">pref_lce_method_xfine</string>
+    <string name="pref_lce_method_fine">pref_lce_method_fine</string>
+    <string name="pref_lce_method_xstrong">pref_lce_method_xstrong</string>
+    
+    <!-- LCE Reset buttons -->
+    <string name="pref_lce_reset_xstrong">pref_lce_reset_xstrong</string>
+    <string name="pref_lce_reset_strong">pref_lce_reset_strong</string>
+    <string name="pref_lce_reset_medium">pref_lce_reset_medium</string>
+    <string name="pref_lce_reset_weak">pref_lce_reset_weak</string>
+    <string name="pref_lce_reset_fine">pref_lce_reset_fine</string>
+    <string name="pref_lce_reset_xfine">pref_lce_reset_xfine</string>
+    
     <string name="pref_ahe">pref_ahe</string>
+    <string name="pref_edge_aware_hist_eq">pref_edge_aware_hist_eq</string>
+    <string name="pref_reference_preview">pref_reference_preview</string>
+    <string name="pref_hist_match_strength">pref_hist_match_strength</string>
     <string name="pref_forward_matrix">pref_forward_matrix</string>
     <string name="pref_gain_map">pref_gain_map</string>
+    <string name="pref_demosaicing_method">pref_demosaicing_method</string>
+    <string name="pref_baseline_exposure_compression">pref_baseline_exposure_compression</string>
+    <string name="pref_hdr_compression_method">pref_hdr_compression_method</string>
+    <string name="pref_ultra_hdr">pref_ultra_hdr</string>
+    <string name="pref_copy_gain_map_from_jpeg">pref_copy_gain_map_from_jpeg</string>
+    <string name="pref_save_hdr_gain_map">pref_save_hdr_gain_map</string>
+    <string name="pref_save_exposure_fusion_frames">pref_save_exposure_fusion_frames</string>
+    <string name="pref_sharpening">pref_sharpening</string>
+    <string name="pref_noise_reduction">pref_noise_reduction</string>
+    <string name="pref_force_noise_reduction">pref_force_noise_reduction</string>
+    <string name="pref_wavelet_noise_reduction">pref_wavelet_noise_reduction</string>
+    <string name="pref_experimental_settings">pref_experimental_settings</string>
+
+    <!-- Color Transform -->
+    <string name="pref_color_transform_rr">pref_color_transform_rr</string>
+    <string name="pref_color_transform_rg">pref_color_transform_rg</string>
+    <string name="pref_color_transform_rb">pref_color_transform_rb</string>
+    <string name="pref_color_transform_gr">pref_color_transform_gr</string>
+    <string name="pref_color_transform_gg">pref_color_transform_gg</string>
+    <string name="pref_color_transform_gb">pref_color_transform_gb</string>
+    <string name="pref_color_transform_br">pref_color_transform_br</string>
+    <string name="pref_color_transform_bg">pref_color_transform_bg</string>
+    <string name="pref_color_transform_bb">pref_color_transform_bb</string>
+    <string name="pref_color_transform_reset">pref_color_transform_reset</string>
+
+    <!-- Tone adjustments -->
+    <string name="pref_tone_curve">pref_tone_curve</string>
+    <string name="pref_tone_curve_enabled">user_tone_curve_enabled</string>
+    <string name="pref_tone_exposure">pref_tone_exposure</string>
+    <string name="pref_tone_highlights">pref_tone_highlights</string>
+    <string name="pref_tone_shadows">pref_tone_shadows</string>
+    <string name="pref_tone_whites">pref_tone_whites</string>
+    <string name="pref_tone_contrast">pref_tone_contrast</string>
+    <string name="pref_tone_blacks">pref_tone_blacks</string>
+    <string name="pref_tone_texture">pref_tone_texture</string>
+    <string name="pref_tone_clarity">pref_tone_clarity</string>
+    <string name="pref_tone_dehaze">pref_tone_dehaze</string>
+    <string name="pref_tone_vibrance">pref_tone_vibrance</string>
+    <string name="pref_tone_saturation">pref_tone_saturation</string>
+    <string name="pref_external_lut_path">pref_external_lut_path</string>
+    <string name="pref_external_lut_clear">pref_external_lut_clear</string>
+    <string name="pref_tone_reset">pref_tone_reset</string>
+    <string name="pref_advanced_options_reset">pref_advanced_options_reset</string>
+
+    <!-- Adaptive Saturation -->
+    <string name="pref_adaptive_saturation_curve">pref_adaptive_saturation_curve</string>
+    <string name="pref_adaptive_saturation_curve_enabled">pref_adaptive_saturation_curve_enabled</string>
+    <string name="pref_hist_factor">pref_hist_factor</string>
+    <string name="pref_adaptive_saturation_power">pref_adaptive_saturation_power</string>
+    <string name="pref_adaptive_saturation_reset">pref_adaptive_saturation_reset</string>
+    
+    <!-- Local Laplacian Filter (darktable-style local contrast) -->
+    <string name="pref_local_laplacian_enabled">pref_local_laplacian_enabled</string>
+    <string name="pref_local_laplacian_shadows">pref_local_laplacian_shadows</string>
+    <string name="pref_local_laplacian_highlights">pref_local_laplacian_highlights</string>
+    <string name="pref_local_laplacian_clarity">pref_local_laplacian_clarity</string>
+    <string name="pref_local_laplacian_sigma">pref_local_laplacian_sigma</string>
+    <string name="pref_local_laplacian_reset">pref_local_laplacian_reset</string>
+    
+    <!-- Tone Equalizer (EV-band based adjustment) -->
+    <string name="pref_tone_equalizer_enabled">pref_tone_equalizer_enabled</string>
+    <string name="pref_tone_eq_blacks">pref_tone_eq_blacks</string>
+    <string name="pref_tone_eq_deep_shadows">pref_tone_eq_deep_shadows</string>
+    <string name="pref_tone_eq_shadows">pref_tone_eq_shadows</string>
+    <string name="pref_tone_eq_light_shadows">pref_tone_eq_light_shadows</string>
+    <string name="pref_tone_eq_midtones">pref_tone_eq_midtones</string>
+    <string name="pref_tone_eq_dark_highlights">pref_tone_eq_dark_highlights</string>
+    <string name="pref_tone_eq_highlights">pref_tone_eq_highlights</string>
+    <string name="pref_tone_eq_whites">pref_tone_eq_whites</string>
+    <string name="pref_tone_eq_speculars">pref_tone_eq_speculars</string>
+    <string name="pref_tone_eq_smoothing">pref_tone_eq_smoothing</string>
+    <string name="pref_tone_eq_feathering">pref_tone_eq_feathering</string>
+    <string name="pref_tone_eq_reset">pref_tone_eq_reset</string>
 </resources>

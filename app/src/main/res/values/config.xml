@@ -2,30 +2,181 @@
 <resources>
     <string-array translatable="false" name="post_processing_preset_names">
         <item>@string/post_processing_disabled</item>
+        <item>@string/post_processing_classic</item>
         <item>@string/post_processing_natural</item>
         <item>@string/post_processing_boosted</item>
+        <item>@string/post_processing_mat</item>
     </string-array>
 
     <string-array translatable="false" name="post_processing_preset_values">
         <item>Disabled</item>
+        <item>Classic</item>
         <item>Natural</item>
         <item>Boosted</item>
+        <item>MAT</item>
     </string-array>
 
-    <string name="pref_post_process_default">Natural</string>
+    <string-array translatable="false" name="lce_method_names">
+        <item>@string/lce_method_lce</item>
+        <item>@string/lce_method_clahe</item>
+        <item>@string/lce_method_fastclahe</item>
+    </string-array>
+
+    <string-array translatable="false" name="lce_method_values">
+        <item>lce</item>
+        <item>clahe</item>
+        <item>fastclahe</item>
+    </string-array>
+
+    <!-- Per-scale methods (excludes CLAHE since it's CPU-based and can't be applied per-scale) -->
+    <string-array translatable="false" name="lce_method_per_scale_names">
+        <item>@string/lce_method_lce</item>
+        <item>@string/lce_method_fastclahe</item>
+    </string-array>
+
+    <string-array translatable="false" name="lce_method_per_scale_values">
+        <item>lce</item>
+        <item>fastclahe</item>
+    </string-array>
+
+    <string-array translatable="false" name="expose_fusion_method_names">
+        <item>@string/expose_fusion_method_laplacian</item>
+        <item>@string/expose_fusion_method_fullmertens</item>
+        <item>@string/expose_fusion_method_mertens</item>
+    </string-array>
+
+    <string-array translatable="false" name="expose_fusion_method_values">
+        <item>laplacian</item>
+        <item>fullmertens</item>
+        <item>mertens</item>
+    </string-array>
+
+    <string name="pref_post_process_default">MAT</string>
 
     <bool name="pref_background_process_default">true</bool>
+    <bool name="pref_delete_original_jpeg_default">false</bool>
+    <string name="pref_jpeg_location_default">DCIM/Camera</string>
     <bool name="pref_delete_original_default">false</bool>
-    <bool name="pref_suffix_default">false</bool>
+    <bool name="pref_skip_existing_default">false</bool>
+    <bool name="pref_suffix_default">true</bool>
+    <string name="pref_replace_prefix_text_default">MAT</string>
+    <bool name="pref_add_suffix_default">false</bool>
+    <string name="pref_add_suffix_text_default">MAT</string>
     <string name="pref_save_path_default">DCIM/Processed</string>
+    <item name="pref_jpeg_quality_default" type="integer" format="float">97</item>
 
     <item name="pref_saturation_default" type="integer" format="float">1</item>
     <item name="pref_saturation_limit_default" type="integer" format="float">0.975</item>
 
-    <bool name="pref_noise_reduce_default">true</bool>
+    <bool name="pref_noise_reduce_default">false</bool>
+    <bool name="pref_wavelet_noise_reduction_default">false</bool>
     <bool name="pref_expose_fuse_default">true</bool>
+    <string name="pref_expose_fusion_method_default">mertens</string>
     <bool name="pref_lce_default">true</bool>
+    <string name="pref_lce_method_default">lce</string>
+    
+    <!-- LCE Radii defaults (percentages) -->
+    <item name="pref_lce_radius_weak_default" type="integer" format="float">5.0</item>
+    <item name="pref_lce_radius_medium_default" type="integer" format="float">10.0</item>
+    <item name="pref_lce_radius_strong_default" type="integer" format="float">33.0</item>
+    <item name="pref_lce_radius_xfine_default" type="integer" format="float">0.22</item>
+    <item name="pref_lce_radius_fine_default" type="integer" format="float">0.5</item>
+    <item name="pref_lce_radius_xstrong_default" type="integer" format="float">100.0</item>
+    
+    <!-- LCE Strengths defaults -->
+    <item name="pref_lce_strength_weak_default" type="integer" format="float">0.15</item>
+    <item name="pref_lce_strength_medium_default" type="integer" format="float">0.25</item>
+    <item name="pref_lce_strength_strong_default" type="integer" format="float">0.5</item>
+    <item name="pref_lce_strength_xfine_default" type="integer" format="float">0.1</item>
+    <item name="pref_lce_strength_fine_default" type="integer" format="float">0.1</item>
+    <item name="pref_lce_strength_xstrong_default" type="integer" format="float">0.25</item>
+    
+    <!-- LCE Limits defaults (clip limits, 0.0-1.0) -->
+    <item name="pref_lce_limit_weak_default" type="integer" format="float">0.7</item>
+    <item name="pref_lce_limit_medium_default" type="integer" format="float">0.6</item>
+    <item name="pref_lce_limit_strong_default" type="integer" format="float">0.5</item>
+    <item name="pref_lce_limit_xfine_default" type="integer" format="float">0.8</item>
+    <item name="pref_lce_limit_fine_default" type="integer" format="float">0.75</item>
+    <item name="pref_lce_limit_xstrong_default" type="integer" format="float">0.5</item>
     <bool name="pref_ahe_default">true</bool>
+    <bool name="pref_edge_aware_hist_eq_default">false</bool>
+    <bool name="pref_reference_preview_default">false</bool>
+    <item name="pref_hist_match_strength_default" type="integer" format="float">0.7</item>
     <bool name="pref_forward_matrix_default">true</bool>
     <bool name="pref_gain_map_default">true</bool>
+    <string name="pref_demosaicing_method_default">bilinear</string>
+    <string name="pref_baseline_exposure_compression_default">0</string>
+    <string name="pref_hdr_compression_method_default">5</string>
+    <bool name="pref_experimental_settings_default">false</bool>
+    <bool name="pref_ultra_hdr_default">true</bool>
+    <bool name="pref_save_hdr_gain_map_default">false</bool>
+    <bool name="pref_save_exposure_fusion_frames_default">false</bool>
+    <bool name="pref_copy_gain_map_from_jpeg_default">false</bool>
+    <item name="pref_sharpening_default" type="integer" format="float">30</item>
+    <item name="pref_noise_reduction_default" type="integer" format="float">25</item>
+    <bool name="pref_force_noise_reduction_default">false</bool>
+
+    <!-- Color Transform defaults (identity matrix) -->
+    <item name="pref_color_transform_rr_default" type="integer" format="float">1.0</item>
+    <item name="pref_color_transform_rg_default" type="integer" format="float">0.0</item>
+    <item name="pref_color_transform_rb_default" type="integer" format="float">0.0</item>
+    <item name="pref_color_transform_gr_default" type="integer" format="float">0.0</item>
+    <item name="pref_color_transform_gg_default" type="integer" format="float">1.0</item>
+    <item name="pref_color_transform_gb_default" type="integer" format="float">0.0</item>
+    <item name="pref_color_transform_br_default" type="integer" format="float">0.0</item>
+    <item name="pref_color_transform_bg_default" type="integer" format="float">0.0</item>
+    <item name="pref_color_transform_bb_default" type="integer" format="float">1.0</item>
+
+    <!-- Tone adjustments defaults (neutral values) -->
+    <item name="pref_tone_exposure_default" type="integer" format="float">0</item>
+    <item name="pref_tone_highlights_default" type="integer" format="float">0</item>
+    <item name="pref_tone_shadows_default" type="integer" format="float">0</item>
+    <item name="pref_tone_whites_default" type="integer" format="float">0</item>
+    <item name="pref_tone_contrast_default" type="integer" format="float">0</item>
+    <item name="pref_tone_blacks_default" type="integer" format="float">0</item>
+    <item name="pref_tone_texture_default" type="integer" format="float">0</item>
+    <item name="pref_tone_clarity_default" type="integer" format="float">0</item>
+    <item name="pref_tone_dehaze_default" type="integer" format="float">0</item>
+    <item name="pref_tone_vibrance_default" type="integer" format="float">0</item>
+    <item name="pref_tone_saturation_default" type="integer" format="float">0</item>
+    <string name="pref_external_lut_path_default"></string>
+
+    <!-- Adaptive Saturation defaults -->
+    <bool name="pref_adaptive_saturation_curve_enabled_default">true</bool>
+    <item name="pref_hist_factor_default" type="integer" format="float">0.5</item>
+    <item name="pref_adaptive_saturation_power_default" type="integer" format="float">0</item>
+
+    <!-- MAT mode options defaults -->
+    <bool name="pref_mat_green_to_yellow_shift_default">true</bool>
+    <bool name="pref_mat_yellow_to_warm_shift_default">true</bool>
+    <bool name="pref_mat_highlight_bloom_default">true</bool>
+    <bool name="pref_mat_highlight_desaturation_default">true</bool>
+    <bool name="pref_mat_shadow_richness_default">true</bool>
+    <bool name="pref_mat_vignetting_default">true</bool>
+    <bool name="pref_mat_soft_highlight_rolloff_default">true</bool>
+
+    <!-- Local Laplacian Filter defaults (darktable-style local contrast) -->
+    <!-- Matched to darktable's bilat.c defaults: midtone=0.5, sigma_s=0.5, sigma_r=0.5, detail=0.25 -->
+    <!-- However, clarity=0.25 was too contrasty, so reduced to 0.1 for more subtle effect -->
+    <bool name="pref_local_laplacian_enabled_default">false</bool>
+    <item name="pref_local_laplacian_shadows_default" type="integer" format="float">1.0</item>
+    <item name="pref_local_laplacian_highlights_default" type="integer" format="float">1.0</item>
+    <item name="pref_local_laplacian_clarity_default" type="integer" format="float">0.1</item>
+    <item name="pref_local_laplacian_sigma_default" type="integer" format="float">0.2</item>
+    <bool name="pref_local_laplacian_autotune_default">true</bool>
+    
+    <!-- Tone Equalizer defaults (EV-band based adjustment) -->
+    <bool name="pref_tone_equalizer_enabled_default">false</bool>
+    <item name="pref_tone_eq_blacks_default" type="integer" format="float">0.0</item>
+    <item name="pref_tone_eq_deep_shadows_default" type="integer" format="float">0.0</item>
+    <item name="pref_tone_eq_shadows_default" type="integer" format="float">0.0</item>
+    <item name="pref_tone_eq_light_shadows_default" type="integer" format="float">0.0</item>
+    <item name="pref_tone_eq_midtones_default" type="integer" format="float">0.0</item>
+    <item name="pref_tone_eq_dark_highlights_default" type="integer" format="float">0.0</item>
+    <item name="pref_tone_eq_highlights_default" type="integer" format="float">0.0</item>
+    <item name="pref_tone_eq_whites_default" type="integer" format="float">0.0</item>
+    <item name="pref_tone_eq_speculars_default" type="integer" format="float">0.0</item>
+    <item name="pref_tone_eq_smoothing_default" type="integer" format="float">5.0</item>
+    <item name="pref_tone_eq_feathering_default" type="integer" format="float">1.0</item>
+    <bool name="pref_tone_equalizer_autotune_default">true</bool>
 </resources>

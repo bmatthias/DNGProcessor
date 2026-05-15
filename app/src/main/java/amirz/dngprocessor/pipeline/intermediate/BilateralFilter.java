@@ -7,9 +7,7 @@ import amirz.dngprocessor.gl.TexturePool;
 import amirz.dngprocessor.params.ProcessParams;
 import amirz.dngprocessor.pipeline.Stage;
 import amirz.dngprocessor.pipeline.StagePipeline;
-import amirz.dngprocessor.pipeline.convert.ToIntermediate;
-import amirz.dngprocessor.pipeline.exposefuse.Merge;
-import amirz.dngprocessor.pipeline.noisereduce.NoiseReduce;
+import amirz.dngprocessor.pipeline.convert.IntermediateProvider;
 
 public class BilateralFilter extends Stage {
     private final ProcessParams mProcess;
@@ -31,12 +29,14 @@ public class BilateralFilter extends Stage {
 
         GLPrograms converter = getConverter();
 
-        Texture intermediate = previousStages.getStage(Merge.class).getMerged();
+        // Get intermediate texture from most recent IntermediateProvider (could be Merge, LocalLaplacian, ToneEqualizer, etc.)
+        Texture intermediate = previousStages.getStageByInterface(IntermediateProvider.class).getIntermediate();
         int w = intermediate.getWidth();
         int h = intermediate.getHeight();
 
-        mBilateral = TexturePool.get(w, h, 3, Texture.Format.Float16);
-        try (Texture bilateralTmp = TexturePool.get(w, h, 3, Texture.Format.Float16)) {
+        // Note: Must use 4 channels (RGBA16F) because RGB16F is not color-renderable in GLES 3.0
+        mBilateral = TexturePool.get(w, h, 4, Texture.Format.Float16);
+        try (Texture bilateralTmp = TexturePool.get(w, h, 4, Texture.Format.Float16)) {
             // Pre-bilateral median filter.
             converter.setTexture("buf", intermediate);
             converter.drawBlocks(bilateralTmp, false);
@@ -72,6 +72,7 @@ public class BilateralFilter extends Stage {
 
     @Override
     protected boolean isEnabled() {
-        return false;
+        // Enable bilateral filter when edge-aware histogram equalization is active
+        return mProcess.edgeAwareHistEq && mProcess.histFactor > 0f;
     }
 }

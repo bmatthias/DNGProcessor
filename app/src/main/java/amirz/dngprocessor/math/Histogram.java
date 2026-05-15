@@ -1,7 +1,9 @@
 package amirz.dngprocessor.math;
 
 public class Histogram {
-    private static final int HIST_BINS = 256;
+    // Increased from 256 to 1024 to reduce quantization banding
+    // 1024 bins provides 4x better precision for histogram equalization
+    private static final int HIST_BINS = 1024;
     private static final double EPSILON = 0.01;
     private static final float LINEARIZE_PERCEPTION = 2.4f;
 
@@ -9,29 +11,67 @@ public class Histogram {
     public final float[] hist;
     public final float gamma;
     public final float logAvgLuminance;
+    public final float minLuminance;
+    public final float maxLuminance;
+    public final float p01Luminance;  // 1st percentile (robust to outliers)
+    public final float p99Luminance;  // 99th percentile (robust to outliers)
 
     public Histogram(float[] f, int whPixels) {
         int[] histv = new int[HIST_BINS];
 
         double logTotalLuminance = 0d;
+        float minLum = Float.MAX_VALUE;
+        float maxLum = 0.0f;
+        
         // Loop over all values
         for (int i = 0; i < f.length; i += 4) {
             for (int j = 0; j < 3; j++) {
                 sigma[j] += f[i + j];
             }
 
-            int bin = (int) (f[i + 3] * HIST_BINS);
+            float luma = f[i + 3];
+            if (luma > 0.0001f) {  // Ignore pure black pixels
+                if (luma < minLum) minLum = luma;
+                if (luma > maxLum) maxLum = luma;
+            }
+
+            int bin = (int) (luma * HIST_BINS);
             if (bin < 0) bin = 0;
             if (bin >= HIST_BINS) bin = HIST_BINS - 1;
             histv[bin]++;
 
-            logTotalLuminance += Math.log(f[i + 3] + EPSILON);
+            logTotalLuminance += Math.log(luma + EPSILON);
         }
+        
+        // Ensure we have valid min/max (fallback if all pixels are black)
+        if (minLum >= maxLum || minLum == Float.MAX_VALUE) {
+            minLum = 0.0f;
+            maxLum = 1.0f;
+        }
+        
+        minLuminance = minLum;
+        maxLuminance = maxLum;
 
         logAvgLuminance = (float) Math.exp(logTotalLuminance * 4 / f.length);
         for (int j = 0; j < 3; j++) {
             sigma[j] /= whPixels;
         }
+
+        // Calculate percentiles from raw histogram before processing
+        // This provides robust normalization that ignores outliers and prevents
+        // extreme contrast when baseline exposure is high
+        float[] tempCumulative = buildCumulativeHist(histv);
+        float p01 = findPercentile(tempCumulative, 0.01f);
+        float p99 = findPercentile(tempCumulative, 0.99f);
+        
+        // Ensure percentiles are valid
+        if (p01 >= p99 || p01 < 0.0f || p99 > 1.0f) {
+            p01 = 0.0f;
+            p99 = 1.0f;
+        }
+        
+        p01Luminance = p01;
+        p99Luminance = p99;
 
         //limitHighlightContrast(histv, f.length / 4);
         float[] cumulativeHist = buildCumulativeHist(histv);
@@ -75,6 +115,23 @@ public class Histogram {
             cumulativeHist[i] /= max;
         }
         return cumulativeHist;
+    }
+
+    /**
+     * Find the luminance value at a given percentile using the cumulative histogram.
+     * 
+     * @param cumulativeHist Cumulative histogram (values in [0,1])
+     * @param percentile Target percentile (e.g., 0.01 for 1st percentile, 0.99 for 99th)
+     * @return Normalized value (0-1) at the percentile
+     */
+    private static float findPercentile(float[] cumulativeHist, float percentile) {
+        int numBins = cumulativeHist.length - 1;
+        for (int i = 0; i <= numBins; i++) {
+            if (cumulativeHist[i] >= percentile) {
+                return (float) i / numBins;
+            }
+        }
+        return 1.0f;
     }
 
     private static float findGamma(float[] cumulativeHist) {

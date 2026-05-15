@@ -26,9 +26,14 @@ void main() {
     for (int i = -radius.x; i <= radius.x; i += radius.y) {
         ivec2 xy = xyCenter + i * dir;
         if (xy.x >= minxy.x && xy.y >= minxy.y && xy.x <= maxxy.x && xy.y <= maxxy.y) {
-            float z = dot(ch, texelFetch(buf, xyCenter + i * dir, 0).xz);
+            vec4 texData = texelFetch(buf, xyCenter + i * dir, 0);
+            // Decode HDR luminance if selecting z channel: z_decoded = z * w
+            // x channel doesn't need decoding (chromaticity, always [0,1])
+            float invScale = max(texData.w, 0.001);
+            float z_decoded = texData.z / invScale;  // HDR decode
+            float value = dot(ch, vec2(texData.x, z_decoded));
             float scale = unscaledGaussian(float(i), sigma);
-            I += z * scale;
+            I += value * scale;
             W += scale;
         }
     }

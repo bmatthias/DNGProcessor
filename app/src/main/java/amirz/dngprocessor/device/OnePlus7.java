@@ -1,6 +1,5 @@
 package amirz.dngprocessor.device;
 
-import android.util.Rational;
 import android.util.SparseArray;
 
 import amirz.dngprocessor.params.SensorParams;

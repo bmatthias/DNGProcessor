@@ -67,14 +67,15 @@ public class DngScanJob extends JobService {
                         if (Path.isRaw(contentResolver, uri, file) && prefs.getBoolean(key, true)) {
                             prefs.edit().putBoolean(key, false).apply();
                             if (backgroundProcess) {
-                                DngParseService.runForUri(this, uri);
+                                DngParseWorker.enqueueWorkBackground(this, uri);
                             }
                             sb.append("PROCESS@");
                         }
 
                         sb.append(file);
                         sb.append(", ");
-                    } catch (Exception ignored) {
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error processing URI " + uri, e);
                     }
                 }
             }

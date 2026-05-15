@@ -49,9 +49,10 @@ public class OpParser {
             throw new IllegalArgumentException("GainMap.mapPlanes can only be 1");
         }
 
-        for (int x = 0; x < map.mapPointsH; x++) {
-            for (int y = 0; y < map.mapPointsV; y++) {
-                map.px[x * map.mapPointsV + y] = reader.getFloat();
+        // Read gain map in row-major order (DNG stores rows first, then columns)
+        for (int y = 0; y < map.mapPointsV; y++) {
+            for (int x = 0; x < map.mapPointsH; x++) {
+                map.px[y * map.mapPointsH + x] = reader.getFloat();
             }
         }
 
