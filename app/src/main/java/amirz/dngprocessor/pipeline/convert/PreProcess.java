@@ -21,7 +21,7 @@ import amirz.dngprocessor.util.HistogramMatchingUtil;
 
 import static android.opengl.GLES20.*;
 
-public class PreProcess extends Stage {
+public class PreProcess extends Stage implements BayerProvider {
     private static final String TAG = "PreProcess";
     
     private final byte[] mRaw;
@@ -53,7 +53,7 @@ public class PreProcess extends Stage {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         GLPrograms converter = getConverter();
         SensorParams sensor = getSensorParams();
 

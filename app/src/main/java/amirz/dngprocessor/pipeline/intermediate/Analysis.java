@@ -169,7 +169,7 @@ public class Analysis extends Stage {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         GLPrograms converter = getConverter();
 
         Texture intermediate = null;

@@ -35,7 +35,7 @@ public class NoiseReduce extends Stage implements IntermediateProvider {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         GLPrograms converter = getConverter();
 
         Texture[] layers = previousStages.getStage(Decompose.class).getLayers();
@@ -351,7 +351,7 @@ public class NoiseReduce extends Stage implements IntermediateProvider {
     }
 
     @Override
-    protected boolean isEnabled() {
+    public boolean isEnabled() {
         return getProcessParams().noiseReduce;
     }
 

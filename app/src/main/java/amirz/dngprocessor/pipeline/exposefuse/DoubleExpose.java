@@ -43,7 +43,7 @@ public class DoubleExpose extends Stage {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         GLPrograms converter = getConverter();
         SensorParams sensor = getSensorParams();
         
@@ -269,7 +269,7 @@ public class DoubleExpose extends Stage {
     }
 
     @Override
-    protected boolean isEnabled() {
+    public boolean isEnabled() {
         ProcessParams process = getProcessParams();
         // Run if exposeFuse toggle is enabled (independent of other stages)
         // Note: This stage is not added to pipeline if EarlyExposureFusion is added

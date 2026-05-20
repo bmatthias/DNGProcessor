@@ -2,13 +2,18 @@ package amirz.dngprocessor.pipeline;
 
 import android.util.Log;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+
 import amirz.dngprocessor.R;
 import amirz.dngprocessor.gl.GLPrograms;
 import amirz.dngprocessor.gl.Texture;
 import amirz.dngprocessor.gl.TexturePool;
-import amirz.dngprocessor.pipeline.convert.LinearRawPreProcess;
 import amirz.dngprocessor.pipeline.convert.IntermediateProvider;
 import amirz.dngprocessor.pipeline.convert.RgbProvider;
+
+import static android.opengl.GLES20.GL_LINEAR;
 
 /**
  * Converts Linear Raw RGB data to intermediate XYZ/xyY colorspace.
@@ -30,7 +35,7 @@ public class LinearRawToIntermediate extends Stage implements IntermediateProvid
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         GLPrograms converter = getConverter();
 
         // Get RGB texture from RgbProvider (could be EarlyExposureFusion or LinearRawPreProcess)
@@ -48,15 +53,12 @@ public class LinearRawToIntermediate extends Stage implements IntermediateProvid
         
         Log.d(TAG, "Got RGB from " + rgbProvider.getClass().getSimpleName());
         
-        // Get dimensions and gain map from LinearRawPreProcess
-        LinearRawPreProcess preProcess = previousStages.getStage(LinearRawPreProcess.class);
-
-        converter.seti("rawWidth", preProcess.getInWidth());
-        converter.seti("rawHeight", preProcess.getInHeight());
+        converter.seti("rawWidth", rgbProvider.getInWidth());
+        converter.seti("rawHeight", rgbProvider.getInHeight());
 
         // Output texture for intermediate xyY format
         // Note: Must use 4 channels (RGBA16F) because RGB16F is not color-renderable in GLES 3.0
-        mIntermediate = TexturePool.get(preProcess.getInWidth(), preProcess.getInHeight(), 4,
+        mIntermediate = TexturePool.get(rgbProvider.getInWidth(), rgbProvider.getInHeight(), 4,
                 Texture.Format.Float16);
 
         // Convert RGB to xyY (don't close rgbTex - it's owned by the provider)
@@ -66,10 +68,19 @@ public class LinearRawToIntermediate extends Stage implements IntermediateProvid
         converter.setf("neutralPoint", neutralPoint);
         converter.setf("sensorToXYZ", mSensorToXYZ_D50);
 
-        try (Texture gainMapTex = preProcess.getGainMapTex()) {
-            converter.setTexture("gainMap", gainMapTex);
-            converter.drawBlocks(mIntermediate);
+        Texture gainMapTex = rgbProvider.getGainMapTex();
+        boolean ownGainMap = false;
+        if (gainMapTex == null) {
+            // No gain map (already applied upstream) – use a 1×1 identity (all ones)
+            FloatBuffer ones = ByteBuffer.allocateDirect(4 * 4)
+                    .order(ByteOrder.nativeOrder()).asFloatBuffer();
+            ones.put(new float[]{1f, 1f, 1f, 1f}).rewind();
+            gainMapTex = new Texture(1, 1, 4, Texture.Format.Float16, ones, GL_LINEAR);
+            ownGainMap = true;
         }
+        converter.setTexture("gainMap", gainMapTex);
+        converter.drawBlocks(mIntermediate);
+        if (ownGainMap) gainMapTex.close();
     }
 
     @Override

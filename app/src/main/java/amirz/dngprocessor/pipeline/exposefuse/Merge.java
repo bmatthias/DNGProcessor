@@ -29,7 +29,7 @@ public class Merge extends Stage implements IntermediateProvider {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         GLPrograms converter = getConverter();
         ProcessParams process = getProcessParams();
         
@@ -354,7 +354,7 @@ public class Merge extends Stage implements IntermediateProvider {
     }
 
     @Override
-    protected boolean isEnabled() {
+    public boolean isEnabled() {
         ProcessParams process = getProcessParams();
         // Run if exposeFuse toggle is enabled (independent of other stages)
         // Note: This stage is not added to pipeline if EarlyExposureFusion is added

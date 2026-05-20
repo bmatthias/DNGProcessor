@@ -82,7 +82,7 @@ public class Laplace extends Stage {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         DoubleExpose de = previousStages.getStage(DoubleExpose.class);
         mUnderPyramid = createPyramid(de.getUnderexposed());
         mExtraHighlightPyramid = createPyramid(de.getExtraHighlight());
@@ -139,7 +139,7 @@ public class Laplace extends Stage {
     }
 
     @Override
-    protected boolean isEnabled() {
+    public boolean isEnabled() {
         ProcessParams process = getProcessParams();
         // Run if exposeFuse toggle is enabled (independent of other stages)
         // Note: Requires DoubleExpose to have run, but that's handled by pipeline order

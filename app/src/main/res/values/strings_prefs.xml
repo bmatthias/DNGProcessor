@@ -2,6 +2,7 @@
 <resources>
     <string name="pref_reprocess">pref_reprocess</string>
     <string name="pref_manual_select">pref_manual_select</string>
+    <string name="pref_burst_select">pref_burst_select</string>
     <string name="pref_pipeline_status">pref_pipeline_status</string>
 
     <string name="pref_background_process">pref_background_process</string>

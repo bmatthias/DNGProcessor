@@ -9,6 +9,12 @@ import amirz.dngprocessor.pipeline.StagePipeline;
 
 import android.util.Log;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+
+import static android.opengl.GLES20.GL_LINEAR;
+
 public class ToIntermediate extends Stage implements IntermediateProvider {
     private final float[] mSensorToXYZ_D50;
     private final float[] mYuvCamMatrix;
@@ -25,22 +31,22 @@ public class ToIntermediate extends Stage implements IntermediateProvider {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         GLPrograms converter = getConverter();
 
-        PreProcess preProcess = previousStages.getStage(PreProcess.class);
+        BayerProvider bayerProvider = previousStages.getStageByInterface(BayerProvider.class);
 
-        converter.seti("rawWidth", preProcess.getInWidth());
-        converter.seti("rawHeight", preProcess.getInHeight());
+        converter.seti("rawWidth", bayerProvider.getInWidth());
+        converter.seti("rawHeight", bayerProvider.getInHeight());
 
         // Second texture for per-CFA pixel data
         // Note: Must use 4 channels (RGBA16F) because RGB16F is not color-renderable in GLES 3.0
-        mIntermediate = TexturePool.get(preProcess.getInWidth(), preProcess.getInHeight(), 4,
+        mIntermediate = TexturePool.get(bayerProvider.getInWidth(), bayerProvider.getInHeight(), 4,
                 Texture.Format.Float16);
 
         // Load mosaic and green raw texture
         try (Texture sensorGTex = previousStages.getStage(GreenDemosaic.class).getSensorGTex()) {
-            try (Texture sensorTex = preProcess.getSensorTex()) {
+            try (Texture sensorTex = bayerProvider.getSensorTex()) {
                 converter.setTexture("rawBuffer", sensorTex);
                 converter.setTexture("greenBuffer", sensorGTex);
 
@@ -63,7 +69,7 @@ public class ToIntermediate extends Stage implements IntermediateProvider {
 
                 converter.setf("neutralPoint", neutralPoint);
                 converter.setf("sensorToXYZ", mSensorToXYZ_D50);
-                converter.seti("cfaPattern", preProcess.getCfaPattern());
+                converter.seti("cfaPattern", bayerProvider.getCfaPattern());
                 
                 // Set demosaicing method: 0 = bilinear, 1 = DHT, 2 = AAHD
                 String demosaicingMethod = getProcessParams().demosaicingMethod;
@@ -80,9 +86,21 @@ public class ToIntermediate extends Stage implements IntermediateProvider {
                 // Pass YUV conversion matrix for AAHD demosaicing
                 converter.setf("yuvCamMatrix", mYuvCamMatrix);
 
-                try (Texture gainMapTex = preProcess.getGainMapTex()) {
+                Texture gainMapTex = bayerProvider.getGainMapTex();
+                boolean ownGainMap = false;
+                if (gainMapTex == null) {
+                    // Gain map already applied upstream (e.g. burst merge). Use a 1×1 identity.
+                    FloatBuffer ones = ByteBuffer.allocateDirect(4 * 4)
+                            .order(ByteOrder.nativeOrder()).asFloatBuffer();
+                    ones.put(new float[]{1f, 1f, 1f, 1f}).rewind();
+                    gainMapTex = new Texture(1, 1, 4, Texture.Format.Float16, ones, GL_LINEAR);
+                    ownGainMap = true;
+                }
+                try {
                     converter.setTexture("gainMap", gainMapTex);
                     converter.drawBlocks(mIntermediate);
+                } finally {
+                    if (ownGainMap) gainMapTex.close();
                 }
             }
         }

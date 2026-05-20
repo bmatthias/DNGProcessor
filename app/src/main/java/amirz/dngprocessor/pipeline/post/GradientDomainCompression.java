@@ -34,7 +34,7 @@ public class GradientDomainCompression extends Stage {
     private int mHeight;
     
     @Override
-    protected boolean isEnabled() {
+    public boolean isEnabled() {
         // Only enable if gradient domain compression is selected
         ProcessParams process = getProcessParams();
         // Check if gradient domain is selected (method 5 for baseline exposure compression)
@@ -43,7 +43,7 @@ public class GradientDomainCompression extends Stage {
     }
     
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         GLPrograms converter = getConverter();
         SensorParams sensor = getSensorParams();
         ProcessParams process = getProcessParams();

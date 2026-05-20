@@ -166,7 +166,7 @@ public class HistogramMatchRgbToXyy extends Stage implements IntermediateProvide
     }
     
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         Log.d(TAG, "=== HistogramMatchRgbToXyy.execute() START ===");
         
         GLPrograms converter = getConverter();

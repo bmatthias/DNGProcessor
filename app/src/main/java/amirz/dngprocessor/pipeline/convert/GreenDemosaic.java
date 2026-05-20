@@ -14,13 +14,12 @@ public class GreenDemosaic extends Stage {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         GLPrograms converter = getConverter();
 
-        PreProcess preProcess = previousStages.getStage(PreProcess.class);
+        BayerProvider bayerProvider = previousStages.getStageByInterface(BayerProvider.class);
 
-        // Load old texture
-        Texture sensorTex = previousStages.getStage(PreProcess.class).getSensorTex();
+        Texture sensorTex = bayerProvider.getSensorTex();
         converter.setTexture("rawBuffer", sensorTex);
         converter.seti("rawWidth", sensorTex.getWidth());
         converter.seti("rawHeight", sensorTex.getHeight());
@@ -28,7 +27,7 @@ public class GreenDemosaic extends Stage {
         mSensorG = new Texture(sensorTex.getWidth(), sensorTex.getHeight(), 1,
                 Texture.Format.Float16, null);
 
-        converter.seti("cfaPattern", preProcess.getCfaPattern());
+        converter.seti("cfaPattern", bayerProvider.getCfaPattern());
         converter.drawBlocks(mSensorG);
     }
 

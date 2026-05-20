@@ -22,7 +22,7 @@ public class BilateralFilter extends Stage {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         if (mProcess.histFactor == 0f) {
             return;
         }
@@ -71,7 +71,7 @@ public class BilateralFilter extends Stage {
     }
 
     @Override
-    protected boolean isEnabled() {
+    public boolean isEnabled() {
         // Enable bilateral filter when edge-aware histogram equalization is active
         return mProcess.edgeAwareHistEq && mProcess.histFactor > 0f;
     }

@@ -930,6 +930,9 @@ public class Preferences extends GlobalPreferences {
             findPreference(getString(R.string.pref_manual_select))
                     .setOnPreferenceClickListener(mActivity::requestImage);
 
+            findPreference(getString(R.string.pref_burst_select))
+                    .setOnPreferenceClickListener(mActivity::requestBurst);
+
             // External LUT file picker
             String prefKey = mActivity.getResources().getString(R.string.pref_external_lut_path);
             Preference externalLutPref = findPreference(prefKey);

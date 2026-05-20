@@ -9,13 +9,19 @@ import amirz.dngprocessor.pipeline.StagePipeline;
 
 public class EdgeMirror extends Stage implements IntermediateProvider {
     private Texture mIntermediate;
+    private int mOffsetScale = 1;
+
+    /** Use when the intermediate is at {@code scale}× the sensor's native resolution. */
+    public void setOffsetScale(int scale) {
+        mOffsetScale = scale;
+    }
 
     public Texture getIntermediate() {
         return mIntermediate;
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         GLPrograms converter = getConverter();
 
         // Get the most recent intermediate (could be from EarlyExposureFusion or ToIntermediate)
@@ -34,8 +40,8 @@ public class EdgeMirror extends Stage implements IntermediateProvider {
 
         converter.setTexture("intermediateBuffer", inputIntermediate);
 
-        int offsetX = getSensorParams().outputOffsetX;
-        int offsetY = getSensorParams().outputOffsetY;
+        int offsetX = mOffsetScale * getSensorParams().outputOffsetX;
+        int offsetY = mOffsetScale * getSensorParams().outputOffsetY;
         converter.seti("minxy", offsetX, offsetY);
         converter.seti("maxxy", w - offsetX - 1, h - offsetY - 1);
 

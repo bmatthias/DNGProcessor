@@ -171,7 +171,7 @@ public class HistogramMatch extends Stage implements IntermediateProvider, RgbPr
     }
     
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         Log.d(TAG, "=== HistogramMatch.execute() START ===");
         
         GLPrograms converter = getConverter();

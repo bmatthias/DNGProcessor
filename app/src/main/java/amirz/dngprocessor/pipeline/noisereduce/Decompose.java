@@ -17,7 +17,7 @@ public class Decompose extends Stage {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         GLPrograms converter = getConverter();
 
         mHighRes = previousStages.getStageByInterface(IntermediateProvider.class).getIntermediate();
@@ -69,7 +69,7 @@ public class Decompose extends Stage {
     }
 
     @Override
-    protected boolean isEnabled() {
+    public boolean isEnabled() {
         return getProcessParams().noiseReduce;
     }
 }

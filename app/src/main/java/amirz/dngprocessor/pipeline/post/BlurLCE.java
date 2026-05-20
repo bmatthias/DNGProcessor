@@ -25,6 +25,12 @@ import amirz.dngprocessor.pipeline.intermediate.MergeDetail;
  */
 public class BlurLCE extends Stage {
     private static final String TAG = "BlurLCE";
+    private int mOffsetScale = 1;
+
+    /** Use when the intermediate is at {@code scale}× the sensor's native resolution. */
+    public void setOffsetScale(int scale) {
+        mOffsetScale = scale;
+    }
     
     // Standard 3-scale LCE
     private Texture mWeakBlur, mMediumBlur, mStrongBlur;
@@ -123,7 +129,7 @@ public class BlurLCE extends Stage {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         ProcessParams process = getProcessParams();
         if (!needsBlurs(process)) {
             return;
@@ -151,8 +157,8 @@ public class BlurLCE extends Stage {
         int refDim = Math.min(w, h);
 
         try (Texture tmp = TexturePool.get(w, h, 1, Texture.Format.Float16)) {
-            int offsetX = getSensorParams().outputOffsetX;
-            int offsetY = getSensorParams().outputOffsetY;
+            int offsetX = mOffsetScale * getSensorParams().outputOffsetX;
+            int offsetY = mOffsetScale * getSensorParams().outputOffsetY;
             converter.seti("minxy", offsetX, offsetY);
             converter.seti("maxxy", w - offsetX - 1, h - offsetY - 1);
 
@@ -226,7 +232,7 @@ public class BlurLCE extends Stage {
     }
 
     @Override
-    protected boolean isEnabled() {
+    public boolean isEnabled() {
         ProcessParams process = getProcessParams();
         // Run if blurs are needed (for LCE, Texture, or Clarity) - independent of other stages
         return needsBlurs(process);

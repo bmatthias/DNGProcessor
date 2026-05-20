@@ -69,7 +69,7 @@ public class LocalLaplacian extends Stage implements IntermediateProvider {
     }
     
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         GLPrograms converter = getConverter();
         ProcessParams process = getProcessParams();
         
@@ -258,7 +258,7 @@ public class LocalLaplacian extends Stage implements IntermediateProvider {
     }
     
     @Override
-    protected boolean isEnabled() {
+    public boolean isEnabled() {
         ProcessParams process = getProcessParams();
         boolean enabled = process != null && process.localLaplacianEnabled;
         Log.d(TAG, "LocalLaplacian.isEnabled(): process=" + (process != null) + 

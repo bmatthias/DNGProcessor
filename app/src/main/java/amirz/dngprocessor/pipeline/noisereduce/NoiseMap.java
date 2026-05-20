@@ -19,7 +19,7 @@ public class NoiseMap extends Stage {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         GLPrograms converter = getConverter();
         Texture[] layers = previousStages.getStage(Decompose.class).getLayers();
         SensorParams sensor = getSensorParams();
@@ -152,7 +152,7 @@ public class NoiseMap extends Stage {
     }
 
     @Override
-    protected boolean isEnabled() {
+    public boolean isEnabled() {
         return getProcessParams().noiseReduce;
     }
 }

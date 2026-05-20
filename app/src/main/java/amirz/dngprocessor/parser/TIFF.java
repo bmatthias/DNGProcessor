@@ -25,6 +25,7 @@ public class TIFF {
     public static final int TAG_YResolution = 283;
     public static final int TAG_PlanarConfiguration = 284;
     public static final int TAG_ResolutionUnit = 296;
+    public static final int TAG_SampleFormat = 339;
     public static final int TAG_Software = 305;
     public static final int TAG_Hardware = 306;
     public static final int TAG_SubIFDs = 330;
@@ -35,6 +36,8 @@ public class TIFF {
     public static final int TAG_ExposureTime = 33434;
     public static final int TAG_FNumber = 33437;
     public static final int TAG_ISOSpeedRatings = 34855;
+    /** EXIF ExposureBiasValue, signed rational, in EV (APEX) — used for burst bracket detection. */
+    public static final int TAG_ExposureBiasValue = 37380;
     public static final int TAG_DateTimeOriginal = 36867;
     public static final int TAG_FocalLength = 37386;
     public static final int TAG_EPStandardID = 37398;

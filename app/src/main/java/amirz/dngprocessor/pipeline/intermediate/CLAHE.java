@@ -252,7 +252,7 @@ public class CLAHE extends Stage implements IntermediateProvider {
     }
     
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         // Get input from most recent IntermediateProvider (could be Merge, MergeDetail, LocalLaplacian, ToneEqualizer, etc.)
         Texture inputIntermediate = previousStages.getStageByInterface(IntermediateProvider.class).getIntermediate();
         

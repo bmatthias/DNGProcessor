@@ -58,6 +58,317 @@ public class DngParser {
         return tags.get(id, TIFFTag.exceptionWrapper(id));
     }
 
+    /**
+     * Parse this DNG file and return the raw pixel data + sensor parameters without
+     * executing the GL pipeline. Used by burst processing to parse multiple frames.
+     */
+    public RawFrame parseSingle() {
+        Preferences pref = Preferences.global();
+
+        ByteReader.ReaderWithExif reader = ByteReader.fromUri(mContext, mUri);
+        Log.i(TAG, "parseSingle: " + mFile + " size=" + reader.length);
+
+        ByteBuffer wrap = reader.wrap;
+        byte[] format = { wrap.get(), wrap.get() };
+        if (!new String(format).equals("II"))
+            throw new ParseException("Can only parse Intel byte order");
+        short version = wrap.getShort();
+        if (version != 42)
+            throw new ParseException("Can only parse v42");
+        int start = wrap.getInt();
+        wrap.position(start);
+
+        SparseArray<TIFFTag> tags = TagParser.parse(wrap);
+        TIFFTag type = tags.get(TIFF.TAG_NewSubfileType);
+
+        // Navigate SubIFDs and merge tags (same logic as run())
+        TIFFTag subIFD = tags.get(TIFF.TAG_SubIFDs);
+        if (subIFD != null) {
+            try {
+                int[] subIFDOffsets = null;
+                try { subIFDOffsets = subIFD.getIntArray(); } catch (Exception ignored) {}
+                if (subIFDOffsets != null && subIFDOffsets.length >= 1) {
+                    int offset = subIFDOffsets[0];
+                    wrap.position(offset);
+                    SparseArray<TIFFTag> subTags = TagParser.parse(wrap);
+                    if (type != null && type.getInt() == 1) {
+                        for (int i = 0; i < subTags.size(); i++)
+                            tags.put(subTags.keyAt(i), subTags.valueAt(i));
+                    }
+                    if (subIFDOffsets.length > 1) {
+                        // Also look through remaining SubIFDs for merging if type==1
+                        for (int s = 1; s < subIFDOffsets.length && type != null && type.getInt() == 1; s++) {
+                            wrap.position(subIFDOffsets[s]);
+                            SparseArray<TIFFTag> st = TagParser.parse(wrap);
+                            for (int i = 0; i < st.size(); i++)
+                                tags.put(st.keyAt(i), st.valueAt(i));
+                        }
+                    }
+                } else {
+                    try {
+                        int offset = subIFD.getInt();
+                        wrap.position(offset);
+                        SparseArray<TIFFTag> subTags = TagParser.parse(wrap);
+                        if (type != null && type.getInt() == 1)
+                            for (int i = 0; i < subTags.size(); i++)
+                                tags.put(subTags.keyAt(i), subTags.valueAt(i));
+                    } catch (Exception ignored) {}
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "parseSingle: SubIFD error: " + e.getMessage());
+            }
+        }
+
+        SensorParams sensor = new SensorParams();
+        sensor.inputHeight = getTag(tags, TIFF.TAG_ImageLength).getInt();
+        sensor.inputWidth  = getTag(tags, TIFF.TAG_ImageWidth).getInt();
+
+        TIFFTag compressionTag = tags.get(TIFF.TAG_Compression);
+        int compression = compressionTag != null ? compressionTag.getInt() : TIFF.COMPRESSION_NONE;
+
+        TIFFTag samplesTag = tags.get(TIFF.TAG_SamplesPerPixel);
+        sensor.samplesPerPixel = samplesTag != null ? samplesTag.getInt() : 1;
+
+        TIFFTag bitsTag = tags.get(TIFF.TAG_BitsPerSample);
+        int bitsPerSample = 16;
+        if (bitsTag != null) {
+            int[] bits = bitsTag.getIntArray();
+            if (bits.length > 0) bitsPerSample = bits[0];
+        }
+
+        TIFFTag photometricTag = tags.get(TIFF.TAG_PhotometricInterpretation);
+        int photometric = photometricTag != null ? photometricTag.getInt() : TIFF.PHOTOMETRIC_CFA;
+        sensor.isLinearRaw = (sensor.samplesPerPixel == 3) || (photometric == TIFF.PHOTOMETRIC_LINEAR_RAW);
+
+        // Read raw pixels
+        byte[] rawBytes;
+        TIFFTag tileOffsetsTag  = tags.get(TIFF.TAG_TileOffsets);
+        TIFFTag tileByteCounts  = tags.get(TIFF.TAG_TileByteCounts);
+        boolean usesTiles = tileOffsetsTag != null && tileByteCounts != null;
+
+        if (usesTiles && compression == TIFF.COMPRESSION_JPEG) {
+            rawBytes = decodeJpegTiles(wrap, tags, sensor);
+        } else if (usesTiles) {
+            rawBytes = decodeUncompressedTiles(wrap, tags, sensor, bitsPerSample);
+        } else {
+            TIFFTag stripOffsetsTag    = tags.get(TIFF.TAG_StripOffsets);
+            TIFFTag stripByteCountsTag = tags.get(TIFF.TAG_StripByteCounts);
+            if (stripOffsetsTag == null || stripByteCountsTag == null)
+                throw new ParseException("No strip or tile data in DNG");
+            int[] stripOffsets    = stripOffsetsTag.getIntArray();
+            int[] stripByteCounts = stripByteCountsTag.getIntArray();
+            sensor.inputStride    = stripByteCounts[0];
+            int bytesPerPixel     = sensor.samplesPerPixel * 2;
+            rawBytes = new byte[sensor.inputWidth * sensor.inputHeight * bytesPerPixel];
+            if (bitsPerSample == 16) {
+                int rawOffset = 0;
+                for (int i = 0; i < stripOffsets.length; i++) {
+                    ((ByteBuffer) wrap.position(stripOffsets[i]))
+                            .get(rawBytes, rawOffset, stripByteCounts[i]);
+                    rawOffset += stripByteCounts[i];
+                }
+            } else {
+                rawBytes = unpackBits(wrap, stripOffsets, stripByteCounts,
+                        sensor.inputWidth, sensor.inputHeight, sensor.samplesPerPixel, bitsPerSample);
+            }
+        }
+
+        // CFA pattern
+        TIFFTag cfaTag = tags.get(TIFF.TAG_CFAPattern);
+        if (cfaTag != null && !sensor.isLinearRaw) {
+            sensor.cfaVal = cfaTag.getByteArray();
+            sensor.cfa    = CFAPattern.get(sensor.cfaVal);
+        } else {
+            sensor.cfaVal = new byte[] { 0, 1, 1, 2 };
+            sensor.cfa    = 0;
+        }
+
+        sensor.blackLevelPattern    = getTag(tags, TIFF.TAG_BlackLevel).getIntArray();
+        sensor.whiteLevel           = getTag(tags, TIFF.TAG_WhiteLevel).getInt();
+        sensor.referenceIlluminant1 = getTag(tags, TIFF.TAG_CalibrationIlluminant1).getInt();
+        sensor.referenceIlluminant2 = getTag(tags, TIFF.TAG_CalibrationIlluminant2).getInt();
+
+        TIFFTag CC1 = tags.get(TIFF.TAG_CameraCalibration1);
+        TIFFTag CC2 = tags.get(TIFF.TAG_CameraCalibration2);
+        if (CC1 != null && CC2 != null) {
+            sensor.calibrationTransform1 = CC1.getFloatArray();
+            sensor.calibrationTransform2 = CC2.getFloatArray();
+        }
+        TIFFTag analogBalanceTag = tags.get(TIFF.TAG_AnalogBalance);
+        sensor.analogBalance = analogBalanceTag != null
+                ? analogBalanceTag.getFloatArray()
+                : new float[] { 1f, 1f, 1f };
+
+        sensor.colorMatrix1 = getTag(tags, TIFF.TAG_ColorMatrix1).getFloatArray();
+        sensor.colorMatrix2 = getTag(tags, TIFF.TAG_ColorMatrix2).getFloatArray();
+        if (pref.forwardMatrix.get()) {
+            TIFFTag fm1 = tags.get(TIFF.TAG_ForwardMatrix1);
+            TIFFTag fm2 = tags.get(TIFF.TAG_ForwardMatrix2);
+            if (fm1 != null && fm2 != null) {
+                sensor.forwardTransform1 = fm1.getFloatArray();
+                sensor.forwardTransform2 = fm2.getFloatArray();
+            }
+        }
+        Rational[] asShotNeutral = getTag(tags, TIFF.TAG_AsShotNeutral).getRationalArray();
+        sensor.neutralColorPoint = new float[] {
+                asShotNeutral[0].floatValue(),
+                asShotNeutral[1].floatValue(),
+                asShotNeutral[2].floatValue()
+        };
+
+        TIFFTag noiseProfile = tags.get(TIFF.TAG_NoiseProfile);
+        sensor.noiseProfile = noiseProfile != null ? noiseProfile.getFloatArray() : new float[6];
+
+        TIFFTag nraTag = tags.get(TIFF.TAG_NoiseReductionApplied);
+        if (nraTag != null) {
+            Rational nra = nraTag.getRational();
+            sensor.noiseReductionApplied = nra.getDenominator() == 0
+                    ? 0f : Math.max(0f, Math.min(1f, nra.floatValue()));
+        }
+        TIFFTag bnTag = tags.get(TIFF.TAG_BaselineNoise);
+        if (bnTag != null) sensor.baselineNoise = Math.max(0.1f, bnTag.getFloat());
+
+        TIFFTag beTag = tags.get(TIFF.TAG_BaselineExposure);
+        if (beTag != null) sensor.baselineExposure = beTag.getFloat();
+
+        TIFFTag lrlTag = tags.get(TIFF.TAG_LinearResponseLimit);
+        if (lrlTag != null)
+            sensor.linearResponseLimit = Math.max(0.1f, Math.min(1f, lrlTag.getFloat()));
+
+        // Read exposure time for HDR weighting
+        float exposureTime = 0f;
+        TIFFTag etTag = tags.get(TIFF.TAG_ExposureTime);
+        if (etTag != null) {
+            try { exposureTime = etTag.getFloat(); } catch (Exception ignored) {}
+        }
+        if (exposureTime <= 0f && reader.exif != null) {
+            String etStr = reader.exif.getAttribute(ExifInterface.TAG_EXPOSURE_TIME);
+            if (etStr != null) {
+                try { exposureTime = Float.parseFloat(etStr); } catch (Exception ignored) {}
+            }
+        }
+
+        // EXIF ExposureBiasValue (signed rational, EV stops). Used by the burst pipeline
+        // to detect bracketed exposures; NaN means "not present".
+        float exposureBiasEv = Float.NaN;
+        TIFFTag ebTag = tags.get(TIFF.TAG_ExposureBiasValue);
+        if (ebTag != null) {
+            try { exposureBiasEv = ebTag.getFloat(); } catch (Exception ignored) {}
+        }
+        if (Float.isNaN(exposureBiasEv) && reader.exif != null) {
+            String ebStr = reader.exif.getAttribute(ExifInterface.TAG_EXPOSURE_BIAS_VALUE);
+            if (ebStr != null) {
+                try { exposureBiasEv = Float.parseFloat(ebStr); } catch (Exception ignored) {}
+            }
+        }
+
+        // ISO speed (fallback when ExposureBiasValue is absent and the burst uses
+        // ISO instead of shutter speed for bracketing).
+        int isoSpeed = 0;
+        TIFFTag isoMetaTag = tags.get(TIFF.TAG_ISOSpeedRatings);
+        if (isoMetaTag != null) {
+            try { isoSpeed = isoMetaTag.getInt(); } catch (Exception ignored) {}
+        }
+        if (isoSpeed <= 0 && reader.exif != null) {
+            String isoStr = reader.exif.getAttribute(ExifInterface.TAG_PHOTOGRAPHIC_SENSITIVITY);
+            if (isoStr != null) {
+                try { isoSpeed = Integer.parseInt(isoStr); } catch (Exception ignored) {}
+            }
+        }
+
+        // Light value (best-effort, same fallback logic as run())
+        if (reader.exif != null) {
+            TIFFTag expTag  = tags.get(TIFF.TAG_ExposureTime);
+            TIFFTag aptTag  = tags.get(TIFF.TAG_FNumber);
+            TIFFTag isoTag  = tags.get(TIFF.TAG_ISOSpeedRatings);
+            if (expTag != null && aptTag != null && isoTag != null) {
+                try {
+                    double t   = expTag.getFloat();
+                    double f   = aptTag.getRational().floatValue();
+                    int iso    = isoTag.getInt();
+                    sensor.lightValue = (float) ((Math.log(f * f / t) - Math.log(iso / 100.0)) / Math.log(2.0));
+                } catch (Exception ignored) {}
+            }
+        }
+
+        // DNG Camera Profile (needed for correct color rendering)
+        TIFFTag profileNameTag = tags.get(TIFF.TAG_ProfileName);
+        if (profileNameTag != null) sensor.profileName = profileNameTag.toString();
+        TIFFTag asShotProfileNameTag = tags.get(TIFF.TAG_AsShotProfileName);
+        if (asShotProfileNameTag != null) sensor.asShotProfileName = asShotProfileNameTag.toString();
+        TIFFTag hueSatDimsTag = tags.get(TIFF.TAG_ProfileHueSatMapDims);
+        if (hueSatDimsTag != null) {
+            sensor.profileHueSatMapDims = hueSatDimsTag.getIntArray();
+            TIFFTag d1 = tags.get(TIFF.TAG_ProfileHueSatMapData1);
+            if (d1 != null) sensor.profileHueSatMapData1 = d1.getFloatArray();
+            TIFFTag d2 = tags.get(TIFF.TAG_ProfileHueSatMapData2);
+            if (d2 != null) sensor.profileHueSatMapData2 = d2.getFloatArray();
+        }
+        TIFFTag tcTag = tags.get(TIFF.TAG_ProfileToneCurve);
+        if (tcTag != null) sensor.profileToneCurve = tcTag.getFloatArray();
+        TIFFTag ltDimsTag = tags.get(TIFF.TAG_ProfileLookTableDims);
+        if (ltDimsTag != null) {
+            sensor.profileLookTableDims = ltDimsTag.getIntArray();
+            TIFFTag ltd = tags.get(TIFF.TAG_ProfileLookTableData);
+            if (ltd != null) sensor.profileLookTableData = ltd.getFloatArray();
+            TIFFTag lte = tags.get(TIFF.TAG_ProfileLookTableEncoding);
+            if (lte != null) sensor.profileLookTableEncoding = lte.getInt();
+        }
+        TIFFTag epTag = tags.get(TIFF.TAG_ProfileEmbedPolicy);
+        if (epTag != null) sensor.profileEmbedPolicy = epTag.getInt();
+
+        // Crop
+        int[] defaultCropOrigin = getTag(tags, TIFF.TAG_DefaultCropOrigin).getIntArray();
+        sensor.outputOffsetX = defaultCropOrigin[0];
+        sensor.outputOffsetY = defaultCropOrigin[1];
+        int[] defaultCropSize = getTag(tags, TIFF.TAG_DefaultCropSize).getIntArray();
+
+        // Gain map (OpcodeList2)
+        TIFFTag Op2 = tags.get(TIFF.TAG_OpcodeList2);
+        if (Op2 != null) {
+            Object[] opParsed = OpParser.parseAll(Op2.getByteArray());
+            OpParser.GainMap[] mapPlanes = new OpParser.GainMap[4];
+            for (Object o : opParsed) {
+                if (o instanceof OpParser.GainMap) {
+                    OpParser.GainMap mp = (OpParser.GainMap) o;
+                    mapPlanes[(mp.top << 1) | mp.left] = mp;
+                }
+            }
+            if (mapPlanes[0] != null && mapPlanes[1] != null
+                    && mapPlanes[2] != null && mapPlanes[3] != null) {
+                sensor.gainMapSize = new int[] { mapPlanes[0].mapPointsH, mapPlanes[0].mapPointsV };
+                sensor.gainMap = new float[sensor.gainMapSize[0] * sensor.gainMapSize[1] * 4];
+                for (int i = 0; i < sensor.gainMap.length; i++)
+                    sensor.gainMap[i] = mapPlanes[i % 4].px[i / 4];
+            }
+        }
+        if (!pref.gainMap.get()) {
+            sensor.gainMap = null;
+            sensor.gainMapSize = null;
+        }
+
+        // Device-specific sensor corrections
+        TIFFTag modelTag = tags.get(TIFF.TAG_Model);
+        DeviceMap.Device device = DeviceMap.get(modelTag == null ? "" : modelTag.toString());
+        // Build a throwaway process just for sensorCorrection (device corrections may need it)
+        amirz.dngprocessor.params.ProcessParams dummyProcess =
+                amirz.dngprocessor.params.ProcessParams.getPreset(Preferences.postProcess());
+        device.sensorCorrection(tags, sensor);
+
+        if (sensor.calibrationTransform1 == null || sensor.calibrationTransform2 == null) {
+            sensor.calibrationTransform1 = DIAGONAL;
+            sensor.calibrationTransform2 = DIAGONAL;
+        }
+
+        Log.i(TAG, "parseSingle done: " + mFile + " " + sensor.inputWidth + "x" + sensor.inputHeight
+                + " exposureTime=" + exposureTime + "s exposureBiasEv="
+                + (Float.isNaN(exposureBiasEv) ? "?" : String.format("%+.2f", exposureBiasEv))
+                + " iso=" + isoSpeed
+                + " isLinearRaw=" + sensor.isLinearRaw);
+        return new RawFrame(rawBytes, sensor, exposureTime, exposureBiasEv, isoSpeed,
+                defaultCropSize[0], defaultCropSize[1], mFile);
+    }
+
     public void run() {
         NotifHandler.progress(mContext, 1, 0);
 

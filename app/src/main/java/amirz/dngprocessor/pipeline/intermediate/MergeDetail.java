@@ -40,7 +40,7 @@ public class MergeDetail extends Stage implements IntermediateProvider {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         GLPrograms converter = getConverter();
 
         BilateralFilter bilateral = previousStages.getStage(BilateralFilter.class);

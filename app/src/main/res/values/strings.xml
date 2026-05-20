@@ -4,6 +4,8 @@
     <string name="category_features">Features</string>
     <string name="pref_manual_select_title">Select manually</string>
     <string name="pref_manual_select_summary">Pick files to process</string>
+    <string name="pref_burst_select_title">Process as burst</string>
+    <string name="pref_burst_select_summary">Pick multiple RAW files to merge as one burst (HDR + super-resolution)</string>
     <string name="pref_reprocess_title">Reprocess</string>
     <string name="pref_reprocess_summary">The last processed image</string>
 

@@ -61,7 +61,7 @@ public class EarlyExposureFusion extends Stage implements RgbProvider {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         Log.d(TAG, "EarlyExposureFusion.execute() - RGB input, luma-space fusion");
         GLPrograms converter = getConverter();
         SensorParams sensor = getSensorParams();

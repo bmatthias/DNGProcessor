@@ -204,6 +204,46 @@ public class ProcessParams {
     public float toneEqFeathering = 1.0f;          // Edge feathering strength
     public boolean toneEqualizerAutoTune = true;  // Auto-tune EV bands based on histogram
 
+    // Burst / multi-frame HDR+SR processing
+    public boolean burstEnabled = false;
+    public int burstScaleFactor = 2;         // SR upscale factor (1 = HDR merge only, 2 = 2x SR)
+
+    /**
+     * Burst merge mode:
+     * <ul>
+     *   <li>{@code "auto"}        — pick {@code hdr_bracket} when frames differ in EV ≥ 0.25,
+     *       otherwise {@code sr_equal}.</li>
+     *   <li>{@code "sr_equal"}    — equal-weight Wronski SR (uniform-exposure handheld stack).</li>
+     *   <li>{@code "hdr_bracket"} — joint HDR + SR for bracketed exposures: merge into the darkest
+     *       frame's EV, exposure-aware weights with highlight protection
+     *       (hdr-plus-swift {@code add_texture_exposure} style).</li>
+     * </ul>
+     */
+    public String burstMode = "auto";
+
+    /**
+     * Per-frame relative EV vs the reference frame (frame 0 after burst reordering).
+     * Length = number of frames. Populated by {@link amirz.dngprocessor.parser.BurstParser}
+     * after bracket detection. Always &ge; 0; reference frame is 0; brighter frames are positive.
+     * {@code null} (or all-zero) when the burst is uniform-exposure.
+     */
+    public float[] burstRelativeEv = null;
+
+    /** True when the burst is bracketed (frames span ≥ {@code BURST_BRACKET_EV_THRESHOLD} EV). */
+    public boolean burstBracketed = false;
+
+    /**
+     * Post-merge linear exposure boost (in EV stops) applied by the burst
+     * merge stages to lift the merged darkest-frame-space output back toward a
+     * "normal-exposure" look. For bracketed bursts this defaults to the median
+     * relative EV of the burst (clipped to 2 stops so we don't blow out the
+     * merged highlights again).
+     */
+    public float burstPostExposureBoostEv = 0f;
+
+    /** Bracket-detection threshold (EV). Frames spanning at least this differ → bracketed burst. */
+    public static final float BURST_BRACKET_EV_THRESHOLD = 0.25f;
+
     private ProcessParams() {
     }
 }

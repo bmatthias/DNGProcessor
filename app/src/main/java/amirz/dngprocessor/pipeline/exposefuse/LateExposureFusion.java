@@ -86,7 +86,7 @@ public class LateExposureFusion extends Stage implements RgbProvider, Intermedia
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         Log.d(TAG, "=== LateExposureFusion.execute() START ===");
         Log.d(TAG, "LateExposureFusion.execute() - Intermediate input, luma-space fusion");
         GLPrograms converter = getConverter();

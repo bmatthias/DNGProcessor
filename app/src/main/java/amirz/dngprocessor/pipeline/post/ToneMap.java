@@ -38,6 +38,9 @@ public class ToneMap extends Stage {
     private final int[] mFbo = new int[1];
     private final float[] mXYZtoProPhoto, mProPhotoToSRGB;
 
+    /** Scale factor for sensor.outputOffsetX/Y when used with a super-resolved intermediate. */
+    private int mOutOffsetScale = 1;
+
     private final int ditherSize = 128;
     private final byte[] dither = new byte[ditherSize * ditherSize * 2];
 
@@ -52,6 +55,11 @@ public class ToneMap extends Stage {
     public ToneMap(float[] XYZtoProPhoto, float[] proPhotoToSRGB) {
         mXYZtoProPhoto = XYZtoProPhoto;
         mProPhotoToSRGB = proPhotoToSRGB;
+    }
+
+    /** Call this when the intermediate texture is at {@code scale}× the sensor's native resolution. */
+    public void setOutOffsetScale(int scale) {
+        mOutOffsetScale = scale;
     }
     
     /**
@@ -259,7 +267,7 @@ public class ToneMap extends Stage {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         GLPrograms converter = getConverter();
         SensorParams sensor = getSensorParams();
         ProcessParams process = getProcessParams();
@@ -383,7 +391,9 @@ public class ToneMap extends Stage {
         converter.setf("toneMapCoeffs", CUSTOM_ACR3_TONEMAP_CURVE_COEFFS);
         converter.setf("XYZtoProPhoto", mXYZtoProPhoto);
         converter.setf("proPhotoToSRGB", mProPhotoToSRGB);
-        converter.seti("outOffset", sensor.outputOffsetX, sensor.outputOffsetY);
+        converter.seti("outOffset",
+                mOutOffsetScale * sensor.outputOffsetX,
+                mOutOffsetScale * sensor.outputOffsetY);
 
         // Check if LCE was actually applied (BlurLCE or CLAHE stage ran)
         // Check if stages have output (if they have output, they ran)

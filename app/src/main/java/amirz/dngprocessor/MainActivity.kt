@@ -16,6 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import amirz.dngprocessor.scheduler.DngParseWorker
+import amirz.dngprocessor.scheduler.BurstParseWorker
 import amirz.dngprocessor.scheduler.DngScanJob
 import amirz.dngprocessor.util.NotifHandler
 import amirz.dngprocessor.util.Path
@@ -88,6 +89,16 @@ class MainActivity : Activity() {
         return false
     }
 
+    fun requestBurst(preference: Preference?): Boolean {
+        val picker = Intent(Intent.ACTION_OPEN_DOCUMENT)
+        picker.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+        picker.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        picker.setType(Path.MIME_RAW)
+        picker.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+        startActivityForResult(picker, REQUEST_BURST)
+        return false
+    }
+
     fun requestLutFile(preference: Preference?): Boolean {
         val picker = Intent(Intent.ACTION_OPEN_DOCUMENT)
         picker.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
@@ -117,6 +128,33 @@ class MainActivity : Activity() {
                         for (i in 0..<cd.itemCount) {
                             process(cd.getItemAt(i).uri, flags)
                         }
+                    }
+                }
+            }
+            REQUEST_BURST -> {
+                if (resultCode == RESULT_OK && data != null) {
+                    val uris = mutableListOf<Uri>()
+                    val cd = data.clipData
+                    if (cd != null) {
+                        for (i in 0..<cd.itemCount) {
+                            val uri = cd.getItemAt(i).uri
+                            contentResolver.takePersistableUriPermission(
+                                uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            )
+                            uris.add(uri)
+                        }
+                    } else if (data.data != null) {
+                        val uri = data.data!!
+                        contentResolver.takePersistableUriPermission(
+                            uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
+                        uris.add(uri)
+                    }
+                    if (uris.size >= 2) {
+                        BurstParseWorker.enqueueWork(this, uris)
+                    } else if (uris.size == 1) {
+                        // Fallback: single file selected, process normally
+                        DngParseWorker.enqueueWork(this, uris[0])
                     }
                 }
             }
@@ -201,5 +239,6 @@ class MainActivity : Activity() {
         private const val REQUEST_NOTIFICATION_PERMISSION = 3
         private const val REQUEST_STORAGE_PERMISSION = 4
         private const val REQUEST_LUT_FILE = 5
+        private const val REQUEST_BURST = 6
     }
 }

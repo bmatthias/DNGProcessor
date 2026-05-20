@@ -11,6 +11,12 @@
             android:persistent="false" />
 
         <Preference
+            android:key="@string/pref_burst_select"
+            android:title="@string/pref_burst_select_title"
+            android:summary="@string/pref_burst_select_summary"
+            android:persistent="false" />
+
+        <Preference
             android:key="@string/pref_reprocess"
             android:title="@string/pref_reprocess_title"
             android:summary="@string/pref_reprocess_summary"

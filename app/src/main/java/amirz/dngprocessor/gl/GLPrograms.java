@@ -37,6 +37,11 @@ public class GLPrograms extends GLResource {
     private int mNewTextureId;
     private int mProgramActive;
 
+    // Cached GPU viewport limits. -1 = not yet queried. Populated lazily on
+    // first drawBlocks() so we don't query before a GL context is current.
+    private int mMaxViewportW = -1;
+    private int mMaxViewportH = -1;
+
     private GLPrograms(ShaderLoader shaderLoader) {
         mShaderLoader = shaderLoader;
     }
@@ -100,19 +105,44 @@ public class GLPrograms extends GLResource {
             format = GL_RGBA;
         }
 
-        BlockDivider divider = new BlockDivider(h, BLOCK_HEIGHT);
+        // GPU viewport width is limited to GL_MAX_VIEWPORT_DIMS[0]. On many
+        // mobile GPUs this is 4096 even when GL_MAX_TEXTURE_SIZE is 8192 or
+        // 16384 — so an 8192-wide FBO can be ALLOCATED but glViewport with
+        // w > MAX_VIEWPORT_DIMS[0] is silently clamped, leaving the right
+        // half of every block unwritten. We tile in X here whenever the
+        // requested width exceeds the viewport limit.
+        if (mMaxViewportW < 0) {
+            int[] dims = new int[2];
+            glGetIntegerv(GL_MAX_VIEWPORT_DIMS, dims, 0);
+            mMaxViewportW = dims[0];
+            mMaxViewportH = dims[1];
+            Log.i(TAG, "Cached GL_MAX_VIEWPORT_DIMS=[" + mMaxViewportW
+                    + "," + mMaxViewportH + "]");
+        }
+        final int tileW = Math.min(w, mMaxViewportW);
+        final int tileH = Math.min(BLOCK_HEIGHT, mMaxViewportH);
+        final boolean wideTexture = w > mMaxViewportW;
+        if (wideTexture) {
+            Log.d(TAG, "drawBlocks X-tiling: w=" + w + " > MAX_VIEWPORT_DIMS[0]="
+                    + mMaxViewportW + ", tiles=" + ((w + tileW - 1) / tileW));
+        }
+
+        BlockDivider divider = new BlockDivider(h, tileH);
         int[] row = new int[2];
         while (divider.nextBlock(row)) {
-            glViewport(0, row[0], w, row[1]);
-            draw();
+            for (int x = 0; x < w; x += tileW) {
+                int bw = Math.min(tileW, w - x);
+                glViewport(x, row[0], bw, row[1]);
+                draw();
 
-            if (format != -1) {
-                mFlushBuffer.position(0);
-                glReadPixels(0, row[0], 1, 1, format, type, mFlushBuffer);
-                int glError = glGetError();
-                if (glError != 0) {
-                    Log.d("GLPrograms", "GLError: " + glError);
-                    throw new RuntimeException("GLError " + glError);
+                if (format != -1) {
+                    mFlushBuffer.position(0);
+                    glReadPixels(x, row[0], 1, 1, format, type, mFlushBuffer);
+                    int glError = glGetError();
+                    if (glError != 0) {
+                        Log.d("GLPrograms", "GLError: " + glError);
+                        throw new RuntimeException("GLError " + glError);
+                    }
                 }
             }
         }
@@ -200,6 +230,29 @@ public class GLPrograms extends GLResource {
             case 4: glUniform4f(loc, vals[0], vals[1], vals[2], vals[3]); break;
             case 9: glUniformMatrix3fv(loc, 1, true, vals, 0); break;
             default: throw new RuntimeException("Cannot set " + var + " to " + Arrays.toString(vals));
+        }
+    }
+
+    /**
+     * Upload a float array to a uniform array variable (e.g. {@code uniform vec2 foo[N]}).
+     *
+     * @param var        GLSL uniform name
+     * @param vals       flat float array; length must be {@code count * components}
+     * @param components number of components per element (1, 2, 3, or 4 → glUniform*fv)
+     */
+    public void setfv(String var, float[] vals, int components) {
+        int loc = loc(var);
+        if (loc == -1) {
+            Log.w(TAG, "Uniform not found: " + var);
+            return;
+        }
+        int count = vals.length / components;
+        switch (components) {
+            case 1: glUniform1fv(loc, count, vals, 0); break;
+            case 2: glUniform2fv(loc, count, vals, 0); break;
+            case 3: glUniform3fv(loc, count, vals, 0); break;
+            case 4: glUniform4fv(loc, count, vals, 0); break;
+            default: throw new RuntimeException("setfv: unsupported component count " + components);
         }
     }
 

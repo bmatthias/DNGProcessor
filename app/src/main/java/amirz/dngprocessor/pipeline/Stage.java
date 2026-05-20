@@ -27,11 +27,11 @@ public abstract class Stage implements AutoCloseable {
         return mProcess;
     }
 
-    protected boolean isEnabled() {
+    public boolean isEnabled() {
         return true;
     }
 
-    protected abstract void execute(StagePipeline.StageMap previousStages);
+    public abstract void execute(StagePipeline.StageMap previousStages);
 
     public abstract int getShader();
 

@@ -57,7 +57,7 @@ public class LinearRawPreProcess extends Stage implements RgbProvider {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         GLPrograms converter = getConverter();
         SensorParams sensor = getSensorParams();
 

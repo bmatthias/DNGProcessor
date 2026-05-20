@@ -57,7 +57,7 @@ public class HdrCompress extends Stage implements IntermediateProvider {
     }
 
     @Override
-    protected void execute(StagePipeline.StageMap previousStages) {
+    public void execute(StagePipeline.StageMap previousStages) {
         Log.d(TAG, "=== HdrCompress.execute() START ===");
 
         GLPrograms converter = getConverter();
